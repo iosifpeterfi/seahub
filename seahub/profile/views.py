@@ -129,6 +129,17 @@ def edit_profile(request):
         resp_dict['default_device'] = default_device(request.user)
         resp_dict['backup_tokens'] = backup_tokens
 
+    # from social_django.models import UserSocialAuth
+    # enabled_social_auth = [x for x in UserSocialAuth.objects.filter(
+    #     username=request.user.username)]
+
+    # weixin_auth = None
+    # for x in enabled_social_auth:
+    #     if x.provider == 'weixin':
+    #         weixin_auth = x
+
+    # resp_dict['weixin_auth'] = weixin_auth
+
     return render(request, 'profile/set_profile.html', resp_dict)
 
 @login_required
