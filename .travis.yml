@@ -24,6 +24,8 @@ before_install:
   - npm install -g requirejs
   - openssl aes-256-cbc -K $encrypted_bdef00a70236_key -iv $encrypted_bdef00a70236_iv -in .travis/travis_deploy_key.enc -out travis_deploy_key -d && mv travis_deploy_key ~/.ssh/id_rsa && chmod 600 ~/.ssh/id_rsa
 
+  - .travis/rebase-upstream.sh
+
 # install seahub requirements
 install:
   - pip install -r dev-requirements.txt --allow-all-external --allow-unverified PIL
@@ -32,8 +34,7 @@ install:
 before_scipt: true
 
 # int & start seahub server, run seahub tests
-script:
-  - .travis/test_seahub_changes.sh; rc=$?; if [[ $rc == 0 ]]; then ./tests/seahubtests.sh init && ./tests/seahubtests.sh runserver && ./tests/seahubtests.sh test; else true; fi
+script: true
 
 after_success:
   # notify seafile-docs to rebuild if master is updated
