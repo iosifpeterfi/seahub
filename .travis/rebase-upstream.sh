@@ -2,6 +2,6 @@
 
 git branch
 
-git fetch git@github.com:haiwen/seahub.git 6.3:6.3
+git fetch git@github.com:haiwen/seahub.git master:master
 
-git rebase 6.3
+git rebase master
