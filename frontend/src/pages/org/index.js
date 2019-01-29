@@ -6,11 +6,18 @@ import { Router } from '@reach/router';
 import SidePanel from './side-panel';
 import MainPanel from './main-panel';
 import OrgUsers from './org-users';
+import OrgUsersList from './org-users-list';
+import OrgAdminList from './org-admin-list';
 
 import { siteRoot } from '../../utils/constants';
 
+// style
+import '../../assets/css/fa-solid.css';
+import '../../assets/css/fa-regular.css';
+import '../../assets/css/fontawesome.css';
 import '../../css/layout.css';
 import '../../css/toolbar.css';
+
 
 class Org extends React.Component {
   constructor(props) {
@@ -34,7 +41,10 @@ class Org extends React.Component {
         />
         <MainPanel>
           <Router>
-            <OrgUsers path={siteRoot + "org/useradmin/"} />
+            <OrgUsers path={siteRoot + "org/useradmin"}>
+              <OrgUsersList path="/" />
+              <OrgAdminList path="admins" />
+            </OrgUsers>
           </Router>
         </MainPanel>
       </div>
