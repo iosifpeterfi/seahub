@@ -19,3 +19,6 @@ def get_custom_login_bg_image_path():
 
 def gen_user_virtual_id():
     return gen_token(max_length=32) + '@auth.local'
+
+def is_user_virtual_id(email):
+    return True if email.endswith('@auth.local') else False

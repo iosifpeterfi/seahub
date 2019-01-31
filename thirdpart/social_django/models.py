@@ -57,9 +57,7 @@ class AbstractUserSocialAuth(models.Model, DjangoUserMixin):
             u = User.objects.get(email=social_auth.username)
             social_auth.user = u
         except User.DoesNotExist:
-            # Delete social_auth record if a user is deleted.
-            social_auth.delete()
-            return None
+            social_auth.user = None
 
         return social_auth
 

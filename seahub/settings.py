@@ -300,7 +300,7 @@ SOCIAL_AUTH_PIPELINE = (
     'seahub.social_core.pipeline.social_auth.associate_user',
     'social_core.pipeline.social_auth.load_extra_data',
     # 'social_core.pipeline.user.user_details',
-    'seahub.social_core.pipeline.user.save_profile',    
+    'seahub.social_core.pipeline.user.save_profile',
 )
 
 ENABLE_OAUTH = False
