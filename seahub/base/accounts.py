@@ -24,7 +24,7 @@ from seahub.role_permissions.utils import get_enabled_role_permissions_by_role, 
         get_enabled_admin_role_permissions_by_role
 from seahub.utils import is_user_password_strong, get_site_name, \
     clear_token, get_system_admins, is_pro_version, IS_EMAIL_CONFIGURED
-from seahub.utils.auth import gen_user_virtual_id
+from seahub.utils.auth import gen_user_virtual_id, is_user_virtual_id
 from seahub.utils.mail import send_html_email_with_dj_template, MAIL_PRIORITY
 from seahub.utils.licenseparse import user_number_over_limit
 from seahub.share.models import ExtraSharePermission
@@ -46,7 +46,7 @@ UNUSABLE_PASSWORD = '!' # This will never be a valid hash
 
 class UserManager(object):
 
-    def create_user(self, email, password=None, is_staff=False, is_active=False, save_profile=True):
+    def create_user(self, email, password=None, is_staff=False, is_active=False):
         """
         Creates and saves a User with given username and password.
         """
@@ -61,9 +61,9 @@ class UserManager(object):
         user.set_password(password)
         user.save()
 
-        if save_profile:
+        # Set email as contact email if this email is not virtual id.
+        if not is_user_virtual_id(email):
             Profile.objects.add_or_update(username=virtual_id,
-                                          nickname=email.split('@')[0],
                                           contact_email=email)
 
         return self.get(email=virtual_id)
