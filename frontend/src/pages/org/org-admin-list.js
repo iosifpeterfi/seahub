@@ -1,15 +1,33 @@
 import React, { Fragment } from 'react';
 
 import { gettext } from '../../utils/constants';
+import { seafileAPI } from '../../utils/seafile-api';
+import UserItem from './org-user-item';
+
+const orgID = window.org.pageOptions.orgID;
 
 
 class OrgAdminList extends React.Component {
 
   constructor(props) {
     super(props);
+    this.state = {
+      orgAdminUsers: []
+    };
   }
 
+  componentDidMount() {
+    seafileAPI.listOrgAdminUsers(orgID).then(res => {
+      this.setState({
+        orgAdminUsers: res.data.org_admins
+      });
+    });
+  }
+
+
   render() {
+    let orgAdminUsers = this.state.orgAdminUsers;
+
     return (
        <div className="cur-view-content">
          <table>
@@ -23,13 +41,9 @@ class OrgAdminList extends React.Component {
              </tr>
            </thead>
            <tbody>
-            <tr>
-              <td>admin</td>
-              <td>admin</td>
-              <td>admin</td>
-              <td>admin</td>
-              <td>admin</td>
-            </tr>
+            {orgAdminUsers.map(item => {
+              return <UserItem key={item.id} user={item} />
+             })}
            </tbody>
          </table>
        </div>

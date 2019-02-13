@@ -1,15 +1,32 @@
 import React, { Fragment } from 'react';
 
 import { gettext } from '../../utils/constants';
+import { seafileAPI } from '../../utils/seafile-api';
+import UserItem from './org-user-item';
+
+const orgID = window.org.pageOptions.orgID;
 
 
 class OrgUsersList extends React.Component {
 
   constructor(props) {
     super(props);
+    this.state = {
+      orgUsers: []
+    };
+  }
+
+  componentDidMount() {
+    seafileAPI.listOrgUsers(orgID).then(res => {
+      this.setState({
+        orgUsers: res.data.org_users
+      });
+    });
   }
 
   render() {
+    let orgUsers = this.state.orgUsers;
+
     return (
        <div className="cur-view-content">
          <table>
@@ -23,13 +40,9 @@ class OrgUsersList extends React.Component {
              </tr>
            </thead>
            <tbody>
-            <tr>
-              <td>all users</td>
-              <td>all users</td>
-              <td>all users</td>
-              <td>all users</td>
-              <td>all users</td>
-            </tr>
+            {orgUsers.map(item => {
+              return <UserItem key={item.id} user={item} />
+             })}
            </tbody>
          </table>
        </div>
