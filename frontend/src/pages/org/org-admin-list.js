@@ -63,7 +63,6 @@ class OrgAdminList extends React.Component {
                                user={item}
                                toggleDelete={this.toggleDelete}
                                toggleResetPW={this.toggleResetPW}
-
                      />
              })}
            </tbody>

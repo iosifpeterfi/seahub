@@ -2,6 +2,7 @@ import React, { Fragment } from 'react';
 
 import { gettext, siteRoot } from '../../utils/constants';
 import moment from 'moment';
+import { seafileAPI } from '../../utils/seafile-api';
 import { Utils } from '../../utils/utils';
 import UserStatusEditor from '../../components/select-editor/user-status-editor';
 
@@ -45,7 +46,18 @@ class UserItem extends React.Component {
   } 
 
   changeStatus = (st) => {
-    console.log(st)
+    let statusCode;
+    if (st == 'active') {
+      statusCode = 1;
+    } else {
+      statusCode = 0;
+    }
+
+    seafileAPI.changeOrgUserStatus(this.props.user.id, statusCode).then(res => {
+      this.setState({
+        currentStatus: statusCode == 1 ? 'active' : 'inactive' 
+      })
+    })
   }
 
   render() {
