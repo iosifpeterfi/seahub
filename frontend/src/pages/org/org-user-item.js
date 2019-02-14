@@ -35,11 +35,13 @@ class UserItem extends React.Component {
   } 
 
   toggleDelete = () => {
-    console.log('Delete')
+    const email = this.props.user.email;
+    this.props.toggleDelete(email);
   }        
            
   toggleResetPW = () => {
-    console.log('ResetPwd')
+    const email = this.props.user.email;
+    this.props.toggleResetPW(email);
   } 
 
   changeStatus = (st) => {

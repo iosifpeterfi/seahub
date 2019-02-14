@@ -2,6 +2,7 @@ import React, { Fragment } from 'react';
 
 import { gettext } from '../../utils/constants';
 import { seafileAPI } from '../../utils/seafile-api';
+import Toast from '../../components/toast';
 import UserItem from './org-user-item';
 
 const orgID = window.org.pageOptions.orgID;
@@ -24,6 +25,22 @@ class OrgAdminList extends React.Component {
     });
   }
 
+  toggleDelete = (email) => {
+    seafileAPI.deleteOrgUser(orgID, email).then(res => {
+      let users = this.state.orgUsers.filter(item => item.email != res.data.email);
+      this.setState({
+        orgUsers: users
+      });
+    })
+  } 
+
+  toggleResetPW = (email) => {
+    seafileAPI.resetOrgUserPassword(orgID, email).then(res => {
+      Toast.success(res.data.msg);
+    });               
+  } 
+
+
 
   render() {
     let orgAdminUsers = this.state.orgAdminUsers;
@@ -42,7 +59,12 @@ class OrgAdminList extends React.Component {
            </thead>
            <tbody>
             {orgAdminUsers.map(item => {
-              return <UserItem key={item.id} user={item} />
+              return <UserItem key={item.id}
+                               user={item}
+                               toggleDelete={this.toggleDelete}
+                               toggleResetPW={this.toggleResetPW}
+
+                     />
              })}
            </tbody>
          </table>
