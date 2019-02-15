@@ -53,7 +53,7 @@ class OrgUsersList extends React.Component {
                <th width="10%">{gettext('Status')}</th>
                <th width="20%">{gettext('Space Used')}</th>
                <th width="20%">{gettext('Create At / Last Login')}</th>
-               <th width="20%">{gettext('Operations')}</th>
+               <th width="20%" className="text-center">{gettext('Operations')}</th>
              </tr>
            </thead>
            <tbody>

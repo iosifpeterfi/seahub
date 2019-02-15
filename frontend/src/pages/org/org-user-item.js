@@ -1,5 +1,7 @@
 import React, { Fragment } from 'react';
 
+import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
+
 import { gettext, siteRoot } from '../../utils/constants';
 import moment from 'moment';
 import { seafileAPI } from '../../utils/seafile-api';
@@ -16,6 +18,7 @@ class UserItem extends React.Component {
       highlight: '',
       showMenu: false,
       currentStatus: this.props.user.is_active ? 'active' : 'inactive',
+      isShowOpMenu: false
     };
 
     this.statusArray = ['active', 'inactive'];
@@ -60,6 +63,22 @@ class UserItem extends React.Component {
     })
   }
 
+  clickMenuToggle = (e) => {
+    e.preventDefault();
+    this.onMenuToggle(e);
+  }
+
+  onMenuToggle = (e) => {
+    let targetType = e.target.dataset.toggle;
+    if (targetType !== 'item') {
+      this.setState({
+        highlight: '',
+        isShowMenu: false,
+        isShowOpMenu: !this.state.isShowOpMenu
+      });
+    }
+  } 
+
   render() {
     let showMenu = !this.props.user.is_self && this.state.showMenu;
     return (
@@ -81,9 +100,23 @@ class UserItem extends React.Component {
         <td>{this.props.user.quota > 0 ? Utils.bytesToSize(this.props.user.self_usage) + ' / ' + Utils.bytesToSize(this.props.user.quota) : Utils.      bytesToSize(this.props.user.self_usage)}</td>
         <td style={{ 'fontSize': '11px'}}>{this.props.user.ctime} / {this.props.user.last_login ? moment(this.props.user.last_login).fromNow() : '--'}</td>
         {(!this.props.user.is_self && this.state.showMenu) ?
-          <td>
-            <a className="font-weight-normal pr-2" href="#" onClick={this.toggleDelete}>{gettext('Delete')}</a>
-            <a className="font-weight-normal pr-2" href="#" onClick={this.toggleResetPW}>{gettext('ResetPwd')}</a>
+          <td className="text-center cursor-pointer">
+            {!this.props.user.is_self && this.state.showMenu && (
+              <Dropdown isOpen={this.state.isShowOpMenu} toggle={this.onMenuToggle}>
+                <DropdownToggle
+                  tag="a"
+                  className="fas fa-ellipsis-v"
+                  title={gettext('More Operations')}
+                  data-toggle="dropdown"
+                  aria-expanded={this.state.isShowOpMenu}
+                  onClick={this.clickMenuToggle}
+                />
+                <DropdownMenu>
+                   <DropdownItem onClick={this.toggleDelete}>{gettext('Delete')}</DropdownItem>
+                   <DropdownItem onClick={this.toggleResetPW}>{gettext('ResetPwd')}</DropdownItem>
+                 </DropdownMenu>
+               </Dropdown>
+            )}
           </td> : <td></td>
         }
       </tr>

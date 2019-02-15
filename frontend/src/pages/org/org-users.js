@@ -19,6 +19,14 @@ class OrgUsers extends Component {
                 <Link className="nav-link" to={siteRoot + "org/useradmin/admins/"} title={gettext('Admin')}>{gettext('Admin')}</Link>
               </li>
             </ul>
+            <div className="operation">
+              <button className="btn btn-secondary operation-item" title={gettext('Add user')} onClick={() => {console.log('Add user')}}>
+                <i className="fas fa-plus-square text-secondary mr-1"></i>{gettext('Add user')}
+              </button>
+              <button className="btn btn-secondary operation-item" title={gettext('Add admin')} onClick={() => {console.log('Add admin')}}>
+                <i className="fas fa-plus-square text-secondary mr-1"></i>{gettext('Add admin')}
+              </button>
+            </div>
           </div>
           {this.props.children}
         </div>
