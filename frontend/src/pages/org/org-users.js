@@ -2,20 +2,13 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from '@reach/router';
 
-import AddOrgUserDialog from '../../components/dialog/org-add-user-dialog'; 
-import AddOrgAdminDialog from '../../components/dialog/org-add-admin-dialog';
-import ModalPortal from '../../components/modal-portal';
-
 import { siteRoot, gettext } from '../../utils/constants';
+
 
 class OrgUsers extends Component {
 
   constructor(props) {
     super(props);
-    this.state = {
-      isShowAddOrgUserDialog: false,
-      isShowAddOrgAdminDialog: false,
-    };
   }
 
   tabItemClick = (param) => {
@@ -23,16 +16,11 @@ class OrgUsers extends Component {
   }
 
   toggleAddOrgUser = () => {
-    this.setState({
-      isShowAddOrgUserDialog: !this.state.isShowAddOrgUserDialog
-    });
+    this.props.toggleAddOrgUser();
   }
 
   toggleAddOrgAdmin = () => {
-    this.setState({
-      isShowAddOrgAdminDialog: !this.state.isShowAddOrgAdminDialog
-    });
-
+    this.props.toggleAddOrgAdmin();
   }
 
   render() {
@@ -63,17 +51,6 @@ class OrgUsers extends Component {
           </div>
           {this.props.children}
         </div>
-        {this.state.isShowAddOrgUserDialog && (
-          <ModalPortal>
-            <AddOrgUserDialog toggle={this.toggleAddOrgUser}/>
-          </ModalPortal>
-        )}
-        {this.state.isShowAddOrgAdminDialog && (
-          <ModalPortal>
-            <AddOrgAdminDialog toggle={this.toggleAddOrgAdmin}/>
-          </ModalPortal>
-        )}
-
       </div>
     );
   }

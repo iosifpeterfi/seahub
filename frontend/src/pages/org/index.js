@@ -24,13 +24,15 @@ class Org extends React.Component {
     super(props);
     this.state = {
       isSidePanelClosed: false,
+      isShowAddOrgUserDialog: false,
+      isShowAddOrgAdminDialog: false,
       currentTab: 'users',
     };
   }
 
   onCloseSidePanel = () => {
     this.setState({
-      isSidePanelClosed: !this.state.isSidePanelClosed,
+      isSidePanelClosed: !this.state.isSidePanelClosed
     })
   }
 
@@ -40,6 +42,20 @@ class Org extends React.Component {
     })           
   }  
 
+  toggleAddOrgUser = () => {
+    this.setState({
+      isShowAddOrgUserDialog: !this.state.isShowAddOrgUserDialog
+    });
+  } 
+
+  toggleAddOrgAdmin = () => {
+    this.setState({
+      isShowAddOrgAdminDialog: !this.state.isShowAddOrgAdminDialog
+    });
+
+  } 
+
+
   render() {
     return (
       <div id="main">
@@ -48,9 +64,20 @@ class Org extends React.Component {
         />
         <MainPanel>
           <Router>
-            <OrgUsers path={siteRoot + "org/useradmin"} currentTab={this.state.currentTab} tabItemClick={this.tabItemClick}>
-              <OrgUsersList path="/" currentTab={this.state.currentTab}/>
-              <OrgAdminList path="admins" currentTab={this.state.currentTab}/>
+            <OrgUsers path={siteRoot + "org/useradmin"}
+                      currentTab={this.state.currentTab} 
+                      tabItemClick={this.tabItemClick}
+                      toggleAddOrgAdmin={this.toggleAddOrgAdmin} 
+                      toggleAddOrgUser={this.toggleAddOrgUser} 
+                      >
+              <OrgUsersList path="/" currentTab={this.state.currentTab} 
+                                     isShowAddOrgUserDialog={this.state.isShowAddOrgUserDialog}
+                                     toggleAddOrgUser={this.toggleAddOrgUser} 
+              />
+              <OrgAdminList path="admins" currentTab={this.state.currentTab}
+                                          isShowAddOrgAdminDialog={this.state.isShowAddOrgAdminDialog}
+                                          toggleAddOrgAdmin={this.toggleAddOrgAdmin}
+              />
             </OrgUsers>
           </Router>
         </MainPanel>

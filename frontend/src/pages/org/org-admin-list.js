@@ -5,6 +5,9 @@ import { seafileAPI } from '../../utils/seafile-api';
 import Toast from '../../components/toast';
 import UserItem from './org-user-item';
 
+import AddOrgAdminDialog from '../../components/dialog/org-add-admin-dialog';
+import ModalPortal from '../../components/modal-portal';
+
 const orgID = window.org.pageOptions.orgID;
 
 
@@ -75,6 +78,12 @@ class OrgAdminList extends React.Component {
              })}
            </tbody>
          </table>
+         {this.props.isShowAddOrgAdminDialog && (
+           <ModalPortal>
+             <AddOrgAdminDialog toggle={this.props.toggleAddOrgAdmin}/>
+           </ModalPortal>
+         )}
+
        </div>
     );
   }
