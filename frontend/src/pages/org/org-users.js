@@ -2,12 +2,37 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from '@reach/router';
 
+import AddOrgUserDialog from '../../components/dialog/org-add-user-dialog'; 
+import AddOrgAdminDialog from '../../components/dialog/org-add-admin-dialog';
+import ModalPortal from '../../components/modal-portal';
+
 import { siteRoot, gettext } from '../../utils/constants';
 
 class OrgUsers extends Component {
 
+  constructor(props) {
+    super(props);
+    this.state = {
+      isShowAddOrgUserDialog: false,
+      isShowAddOrgAdminDialog: false,
+    };
+  }
+
   tabItemClick = (param) => {
     this.props.tabItemClick(param);
+  }
+
+  toggleAddOrgUser = () => {
+    this.setState({
+      isShowAddOrgUserDialog: !this.state.isShowAddOrgUserDialog
+    });
+  }
+
+  toggleAddOrgAdmin = () => {
+    this.setState({
+      isShowAddOrgAdminDialog: !this.state.isShowAddOrgAdminDialog
+    });
+
   }
 
   render() {
@@ -25,12 +50,12 @@ class OrgUsers extends Component {
             </ul>
             <div className="operation">
               {this.props.currentTab === 'users' &&
-              <button className="btn btn-secondary operation-item" title={gettext('Add user')} onClick={() => {console.log('Add user')}}>
+              <button className="btn btn-secondary operation-item" title={gettext('Add user')} onClick={this.toggleAddOrgUser}>
                 <i className="fas fa-plus-square text-secondary mr-1"></i>{gettext('Add user')}
               </button>
               }
               {this.props.currentTab === 'admins' &&
-              <button className="btn btn-secondary operation-item" title={gettext('Add admin')} onClick={() => {console.log('Add admin')}}>
+              <button className="btn btn-secondary operation-item" title={gettext('Add admin')} onClick={this.toggleAddOrgAdmin}>
                 <i className="fas fa-plus-square text-secondary mr-1"></i>{gettext('Add admin')}
               </button>
               }
@@ -38,6 +63,17 @@ class OrgUsers extends Component {
           </div>
           {this.props.children}
         </div>
+        {this.state.isShowAddOrgUserDialog && (
+          <ModalPortal>
+            <AddOrgUserDialog toggle={this.toggleAddOrgUser}/>
+          </ModalPortal>
+        )}
+        {this.state.isShowAddOrgAdminDialog && (
+          <ModalPortal>
+            <AddOrgAdminDialog toggle={this.toggleAddOrgAdmin}/>
+          </ModalPortal>
+        )}
+
       </div>
     );
   }
