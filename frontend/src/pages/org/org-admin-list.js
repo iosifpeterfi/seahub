@@ -30,7 +30,7 @@ class OrgAdminList extends React.Component {
 
   toggleDelete = (email) => {
     seafileAPI.deleteOrgUser(orgID, email).then(res => {
-      let users = this.state.orgUsers.filter(item => item.email != res.data.email);
+      let users = this.state.orgAdminUsers.filter(item => item.email != res.data.email);
       this.setState({
         orgUsers: users
       });
@@ -45,10 +45,21 @@ class OrgAdminList extends React.Component {
 
   toggleRevokeAdmin = (userID) => {
     seafileAPI.removeOrgAdmin(orgID, userID).then(res => {
+      this.setState({
+        orgAdminUsers: this.state.orgAdminUsers.filter(item => item.id != res.data.user_id)
+      });
       Toast.success(res.data.success_msg);
-    })
+    });
   }
 
+  addOrgAdmin = (users) => {
+    seafileAPI.addOrgAdmin(orgID, users).then(res => {
+      this.setState({
+        orgAdminUsers: this.state.orgAdminUsers.concat(res.data.success)
+      });
+      this.props.toggleAddOrgAdmin();
+    });
+  } 
 
 
   render() {
@@ -80,7 +91,10 @@ class OrgAdminList extends React.Component {
          </table>
          {this.props.isShowAddOrgAdminDialog && (
            <ModalPortal>
-             <AddOrgAdminDialog toggle={this.props.toggleAddOrgAdmin}/>
+             <AddOrgAdminDialog toggle={this.props.toggleAddOrgAdmin}
+                                orgID={orgID}
+                                addOrgAdmin={this.addOrgAdmin}
+             />
            </ModalPortal>
          )}
 

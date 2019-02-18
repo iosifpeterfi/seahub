@@ -13,16 +13,16 @@ class AddOrgUserDialog extends React.Component {
       email: '',
       name: '',
       password: '',
-      passwdNew: '',
+      passwdnew: '',
     };
   }
 
   handleSubmit = (e) => {
-    let password = this.state.password;
     let email = this.state.email;
     let name = this.state.name;
     let password1 = this.state.password;
-    let password2 = this.state.passwordNew;
+    let password2 = this.state.passwdnew;
+    this.props.handleSubmit(email, name, password1, password2);
     e.preventDefault();
   } 
 
@@ -45,6 +45,17 @@ class AddOrgUserDialog extends React.Component {
       passwdnew: val
     });
   }
+
+  inputEmail = (e) => {
+    let email = e.target.value.trim();
+    this.setState({email: email});
+  }
+
+  inputName = (e) => {
+    let name = e.target.value.trim();
+    this.setState({name: name});
+  }
+
 
   inputPassword = (e) => {
     let passwd = e.target.value.trim();
@@ -85,11 +96,11 @@ class AddOrgUserDialog extends React.Component {
           <Form>
             <FormGroup>
               <Label>{gettext('Email')}</Label>
-              <Input  />
+              <Input value={this.state.email || ''} onChange={this.inputEmail} />
             </FormGroup>
             <FormGroup>
               <Label>{gettext('Name(optional)')}</Label>
-              <Input  />
+              <Input value={this.state.name || ''} onChange={this.inputName} />
             </FormGroup>
             <FormGroup>
               <Label>{gettext('Password')}</Label>
@@ -105,7 +116,7 @@ class AddOrgUserDialog extends React.Component {
               <Label>{gettext('Confirm Password')}</Label>
               <Input className="passwd" type={this.state.isPasswordVisible ? 'text' : 'password'} value={this.state.passwdnew || ''} onChange={this.inputPasswordNew} />
             </FormGroup>
-            <Button>{gettext('Submit')}</Button>
+            <Button onClick={this.handleSubmit}>{gettext('Submit')}</Button>
           </Form>
         </ModalBody>
       </Modal>
