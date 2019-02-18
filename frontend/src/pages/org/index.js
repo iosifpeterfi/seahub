@@ -24,6 +24,7 @@ class Org extends React.Component {
     super(props);
     this.state = {
       isSidePanelClosed: false,
+      currentTab: 'users',
     };
   }
 
@@ -33,6 +34,12 @@ class Org extends React.Component {
     })
   }
 
+  tabItemClick = (param) => {
+    this.setState({
+      currentTab: param
+    })           
+  }  
+
   render() {
     return (
       <div id="main">
@@ -41,9 +48,9 @@ class Org extends React.Component {
         />
         <MainPanel>
           <Router>
-            <OrgUsers path={siteRoot + "org/useradmin"}>
-              <OrgUsersList path="/" />
-              <OrgAdminList path="admins" />
+            <OrgUsers path={siteRoot + "org/useradmin"} currentTab={this.state.currentTab} tabItemClick={this.tabItemClick}>
+              <OrgUsersList path="/" currentTab={this.state.currentTab}/>
+              <OrgAdminList path="admins" currentTab={this.state.currentTab}/>
             </OrgUsers>
           </Router>
         </MainPanel>

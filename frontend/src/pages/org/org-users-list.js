@@ -62,6 +62,7 @@ class OrgUsersList extends React.Component {
                                user={item}
                                toggleDelete={this.toggleDelete}
                                toggleResetPW={this.toggleResetPW}
+                               currentTab={this.props.currentTab}
                      />
              })}
            </tbody>

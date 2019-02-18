@@ -48,6 +48,11 @@ class UserItem extends React.Component {
     this.props.toggleResetPW(email);
   } 
 
+  toggleRevokeAdmin = () => {
+    const userID = this.props.user.id;
+    this.props.toggleRevokeAdmin(userID);
+  }
+
   changeStatus = (st) => {
     let statusCode;
     if (st == 'active') {
@@ -114,6 +119,9 @@ class UserItem extends React.Component {
                 <DropdownMenu>
                    <DropdownItem onClick={this.toggleDelete}>{gettext('Delete')}</DropdownItem>
                    <DropdownItem onClick={this.toggleResetPW}>{gettext('ResetPwd')}</DropdownItem>
+                   {this.props.currentTab == 'admins' &&
+                     <DropdownItem onClick={this.toggleRevokeAdmin}>{gettext('Revoke Admin')}</DropdownItem>
+                   }
                  </DropdownMenu>
                </Dropdown>
             )}

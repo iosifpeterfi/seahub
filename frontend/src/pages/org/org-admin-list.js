@@ -40,6 +40,12 @@ class OrgAdminList extends React.Component {
     });               
   } 
 
+  toggleRevokeAdmin = (userID) => {
+    seafileAPI.removeOrgAdmin(orgID, userID).then(res => {
+      Toast.success(res.data.success_msg);
+    })
+  }
+
 
 
   render() {
@@ -63,6 +69,8 @@ class OrgAdminList extends React.Component {
                                user={item}
                                toggleDelete={this.toggleDelete}
                                toggleResetPW={this.toggleResetPW}
+                               toggleRevokeAdmin={this.toggleRevokeAdmin}
+                               currentTab={this.props.currentTab}
                      />
              })}
            </tbody>
