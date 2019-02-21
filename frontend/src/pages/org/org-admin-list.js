@@ -30,32 +30,30 @@ class OrgAdminList extends React.Component {
 
   toggleDelete = (email) => {
     seafileAPI.deleteOrgUser(orgID, email).then(res => {
-      let users = this.state.orgAdminUsers.filter(item => item.email != res.data.email);
       this.setState({
-        orgUsers: users
+        orgAdminUsers: this.state.orgAdminUsers.filter(item => item.email != res.data.email)
       });
+      let msg = gettext('Successfully deleted %s');
+      msg = msg.replace('%s', res.data.name);
+      Toast.success(msg);
     })
-  } 
-
-  toggleResetPW = (email) => {
-    seafileAPI.resetOrgUserPassword(orgID, email).then(res => {
-      Toast.success(res.data.msg);
-    });               
   } 
 
   toggleRevokeAdmin = (userID) => {
     seafileAPI.removeOrgAdmin(orgID, userID).then(res => {
       this.setState({
-        orgAdminUsers: this.state.orgAdminUsers.filter(item => item.id != res.data.user_id)
+        orgAdminUsers: this.state.orgAdminUsers.filter(item => item.id != res.data.id)
       });
-      Toast.success(res.data.success_msg);
+      let msg = gettext('Successfully revoke the admin permission of %s');
+      msg = msg.replace('%s', res.data.name);
+      Toast.success(msg);
     });
   }
 
   addOrgAdmin = (users) => {
     seafileAPI.addOrgAdmin(orgID, users).then(res => {
       this.setState({
-        orgAdminUsers: this.state.orgAdminUsers.concat(res.data.success)
+        orgAdminUsers: this.state.orgAdminUsers.concat(res.data.result.success)
       });
       this.props.toggleAddOrgAdmin();
     });
@@ -82,7 +80,6 @@ class OrgAdminList extends React.Component {
               return <UserItem key={item.id}
                                user={item}
                                toggleDelete={this.toggleDelete}
-                               toggleResetPW={this.toggleResetPW}
                                toggleRevokeAdmin={this.toggleRevokeAdmin}
                                currentTab={this.props.currentTab}
                      />

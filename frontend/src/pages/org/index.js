@@ -30,6 +30,15 @@ class Org extends React.Component {
     };
   }
 
+  componentDidMount() {
+    let href = window.location.href.split('/');
+    let currentTab = href[href.length - 2];
+    if (currentTab == 'useradmin') {
+      currentTab = 'users';
+    }
+    this.setState({currentTab: currentTab});
+  }
+
   onCloseSidePanel = () => {
     this.setState({
       isSidePanelClosed: !this.state.isSidePanelClosed

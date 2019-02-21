@@ -90,7 +90,7 @@ class AddOrgUserDialog extends React.Component {
 
   render() {
     return (
-      <Modal isOpen={true} centered={true}>
+      <Modal isOpen={true}>
         <ModalHeader toggle={this.toggle}>{gettext('Add User')}</ModalHeader>
         <ModalBody>
           <Form>

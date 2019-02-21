@@ -5,10 +5,12 @@ import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap
 import { gettext, siteRoot } from '../../utils/constants';
 import moment from 'moment';
 import { seafileAPI } from '../../utils/seafile-api';
+import Toast from '../../components/toast';
 import { Utils } from '../../utils/utils';
 import UserStatusEditor from '../../components/select-editor/user-status-editor';
 
 moment.locale(window.app.config.lang);
+const orgID = window.org.pageOptions.orgID;
 
 class UserItem extends React.Component {
 
@@ -45,8 +47,35 @@ class UserItem extends React.Component {
            
   toggleResetPW = () => {
     const email = this.props.user.email;
-    this.props.toggleResetPW(email);
-  } 
+    seafileAPI.resetOrgUserPassword(orgID, email).then(res => {
+      let msg;
+      if (res.data.is_email_configured == false) {
+        msg = gettext('Successfully reset password to %(passwd)s for user %(user)s. But email notification can not be sent, because Email service is not properly configured.');
+        msg = msg.replace('%(passwd)s', res.data.new_password);
+        msg = msg.replace('%(user)s', res.data.user_contact_email);
+      }
+      else {
+        if (res.data.send_email) {
+          msg = gettext('Successfully reset password to %(passwd)s, an email has been sent to %(user)s.');
+          msg = msg.replace('%(passwd)s', res.data.new_password);
+          msg = msg.replace('%(user)s', res.data.user_contact_email);
+        }
+
+        if (res.data.send_email == false) {
+          msg = gettext('Successfully reset password to %(passwd)s, but failed to send email to %(user)s, please check your email configuration.');
+          msg = msg.replace('%(passwd)s', res.data.new_password);
+          msg = msg.replace('%(user)s', res.data.user_contact_email);
+        }
+
+        if (res.data.send_email == null) {
+          msg = gettext('Successfully reset password to %(passwd)s for user %(user)s.');
+          msg = msg.replace('%(passwd)s', res.data.new_password);
+          msg = msg.replace('%(user)s', res.data.user_contact_email);
+        }
+      }
+      Toast.success(msg);
+    });
+  }
 
   toggleRevokeAdmin = () => {
     const userID = this.props.user.id;
@@ -64,8 +93,19 @@ class UserItem extends React.Component {
     seafileAPI.changeOrgUserStatus(this.props.user.id, statusCode).then(res => {
       this.setState({
         currentStatus: statusCode == 1 ? 'active' : 'inactive' 
-      })
-    })
+      });
+
+      if (res.data.email_sent) {
+          Toast.success(gettext('Edit succeeded, an email has been sent.'));
+ 
+      } else if (res.data.email_sent == false) { 
+          Toast.success(gettext('Edit succeeded, but failed to send email, please check your email configuration.'));
+      } else {                                                                                                          
+          Toast.success(gettext('Edit succeeded.'));
+      }   
+    }).catch(err => {
+      Toast.danger(gettext('Edit falied.'));
+    });
   }
 
   clickMenuToggle = (e) => {

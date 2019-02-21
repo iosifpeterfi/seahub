@@ -34,13 +34,12 @@ class OrgUsersList extends React.Component {
       this.setState({
         orgUsers: users
       });
+      let msg = gettext('Successfully deleted %s');
+      msg = msg.replace('%s', res.data.name);
+      Toast.success(msg);
+    }).catch(err => {
+      Toast.danger(err.response.data.error_msg);
     })
-  } 
-
-  toggleResetPW = (email) => {
-    seafileAPI.resetOrgUserPassword(orgID, email).then(res => {
-      Toast.success(res.data.msg);
-    });               
   } 
 
   handleSubmit = (email, name, password1, password2) => {
@@ -49,7 +48,28 @@ class OrgUsersList extends React.Component {
         orgUsers: this.state.orgUsers.concat(res.data.user_info)
       }); 
       this.props.toggleAddOrgUser();
-      Toast.success(res.data.msg);
+      let msg;
+      if(res.data.conf.is_email_configured == false) {
+        msg = gettext('Successfully added user %s. But email notification can not be sent, because Email service is not properly configured.');
+        msg = msg.replace('%s', email);
+      }
+      else {
+        if (res.data.send_email == false) {
+          msg = gettext('Successfully added user %s. An error accurs when sending email notification, please check your email configuration.');
+          msg = msg.replace('%s', email);
+        }
+
+        if (res.data.send_email == null) {
+          msg = gettext('Successfully added user %s.');
+          msg = msg.replace('%s', email);
+        } 
+
+        if (res.data.send_email) { 
+          msg = gettext('Successfully added user %s. An email notification has been sent.')
+          msg = msg.replace('%s', email);
+        }
+      }
+      Toast.success(msg);
     });
   } 
 
@@ -73,7 +93,6 @@ class OrgUsersList extends React.Component {
               return <UserItem key={item.id}
                                user={item}
                                toggleDelete={this.toggleDelete}
-                               toggleResetPW={this.toggleResetPW}
                                currentTab={this.props.currentTab}
                      />
              })}
