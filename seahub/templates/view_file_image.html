@@ -1,51 +1,61 @@
-{% extends 'view_file_base.html' %}
-{% load i18n %}
+{% load render_bundle from webpack_loader %}
+{% load static seahub_tags i18n %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
+    <head>
+         <meta charset="UTF-8" />
+         <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+         <title>{{ filename }}</title>
 
-
-{% block extra_style %}{{block.super}}
-<style type="text/css">
-#file-view { text-align:center; padding:30px 0; position:relative; }
-</style>
-{% endblock %}
-
-{% block file_view_extra_class %}image-file-view{% endblock %}
-
-{% block file_view %}
-    {% if img_prev %}
-    <a href="{% url 'view_lib_file' repo.id img_prev %}" id="img-prev" title="{% trans 'you can also press ← ' %}"><span class="icon-chevron-left"></span></a>
-    {% endif %}
-    {% if img_next %}
-    <a href="{% url 'view_lib_file' repo.id img_next %}" id="img-next" title="{% trans 'you can also press → ' %}"><span class="icon-chevron-right"></span></a>
-    {% endif %}
-
-    <span class="loading-icon"></span>
-    <img src="" alt="{{ filename }}" id="image-view" class="hide" />
-{% endblock %}
-
-{% block extra_script %}{{ block.super }}
-<script type="text/javascript">
-{% if enable_thumbnail and not repo.encrypted and fileext != 'gif' %}
-    var try_time = 0;
-    var encoded_path = encodePath('{{ path|escapejs }}'); // path: '/Portrait_8.jpg'
-    $('#image-view')
-    .attr('src', '{{ SITE_ROOT }}thumbnail/{{ repo.id }}/{{ thumbnail_size_for_original }}' + encoded_path)
-    .on('error', function() { // fail to load thumbnail
-        try_time++;
-        if (try_time == 1) { // only try once
-            $(this).attr('src', '{{ raw_path|escapejs }}');
-        } else {
-            $('#file-view').removeClass('image-file-view')
-            .html('<div id="file-view-tip"><p class="error">{% trans "This file cannot be viewed online." %}</p><a href="?dl=1" class="sf-btn-link big-btn-link">{% trans "Download" %}</a></div>');
-        }
-    })
-{% else %}
-    {% if xmind_image_src %}
-        $('#image-view').attr('src', '{{ SITE_ROOT }}{{ xmind_image_src|escapejs }}');
-    {% else %}
-        $('#image-view').attr('src', '{{ raw_path|escapejs }}');
-    {% endif %}
-{% endif %}
-
-{% include 'snippets/image_file_view_js.html' %}
-</script>
-{% endblock %}
+         <link rel="shortcut icon" href="{{ MEDIA_URL }}{{ favicon_path }}" />
+         <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/seafile-ui.css" />
+         <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/seahub_react.css?t=1398068110" />
+    </head>
+    <body>
+         <div id="root"></div>
+         <div id="modal-wrapper"></div>
+         <script type="text/javascript">
+           window.app = {
+              config: {
+                  mediaUrl: '{{ MEDIA_URL }}',
+                  siteRoot: '{{ SITE_ROOT }}',
+                  serviceURL: '{{ service_url }}',
+                  seafileCollabServer: '{{ seafile_collab_server}}',
+              },
+              pageOptions: {
+                  isPro: '{{ is_pro }}',
+                  repoID: '{{ repo.id }}',
+                  fileID: '{{ file_id }}',
+                  repoName: '{{ repo.name|escapejs }}',
+                  filePath: '{{ path|escapejs }}',
+                  fileName: '{{ filename|escapejs }}',
+                  filePerm: '{{ file_perm }}',
+                  enableFileComment: '{{ enable_file_comment }}' == 'True',
+                  parentDir: '{{ parent_dir|escapejs }}',
+                  fileExt: '{{ fileext|escapejs }}',
+                  siteName: '{{ site_name }}',
+                  enableWatermark: '{{ enable_watermark }}' == 'True',
+                  download: '{{ can_download_file }}' == 'True',
+                  err: '{{ err }}',
+                  latestContributor: '{{ latest_contributor|email2nickname }}',
+                  lastModified: '{{ last_modified }}',
+                  isLocked: '{{ file_locked }}' == 'True',
+                  lockedByMe: '{{ locked_by_me }}' == 'True',
+                  canLockUnlockFile: '{{ can_lock_unlock_file }}' == 'True',
+                  isStarred: '{{ is_starred }}' == 'True',
+                  xmindImageSrc: '{{ xmind_image_src }}',
+                  imgPrev: '{{ img_prev }}',
+                  imgNext: '{{ img_next }}',
+                  rawPath: '{{ raw_path }}',
+              },
+             userInfo: {
+               username: '{{ user.username }}',
+               name: '{{ user.username|email2nickname|escapejs }}',
+               contact_email: '{{ user.username|email2contact_email }}',
+             }
+          }
+         </script>
+         <script src="{{ STATIC_URL }}scripts/i18n/{{ LANGUAGE_CODE }}/djangojs.js"></script>
+         {% render_bundle 'viewFileImage' %}
+    </body>
+</html>
