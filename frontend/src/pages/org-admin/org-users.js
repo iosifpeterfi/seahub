@@ -4,6 +4,9 @@ import { Link } from '@reach/router';
 
 import { siteRoot, gettext } from '../../utils/constants';
 
+const propTypes = {
+  children: PropTypes.object.isRequired,
+};
 
 class OrgUsers extends Component {
 
@@ -56,4 +59,5 @@ class OrgUsers extends Component {
   }
 }
 
+OrgUsers.propTypes = propTypes;
 export default OrgUsers;

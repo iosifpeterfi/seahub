@@ -2,8 +2,13 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import AsyncSelect from 'react-select/lib/Async';
 import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
-import { gettext, siteRoot, mediaUrl } from '../../utils/constants';
+import { gettext, orgID } from '../../utils/constants';
 import { seafileAPI } from '../../utils/seafile-api';
+
+const propTypes = {
+  toggle: PropTypes.func.isRequired,
+  addOrgAdmin: PropTypes.func.isRequired,
+};
 
 
 class AddOrgAdminDialog extends React.Component {
@@ -17,7 +22,7 @@ class AddOrgAdminDialog extends React.Component {
 
   loadOptions = (value, callback) => {
     if (value.trim().length > 0) {
-      seafileAPI.searchOrgUsers(this.props.orgID,value.trim()).then((res) => {
+      seafileAPI.searchOrgUsers(orgID,value.trim()).then((res) => {
         this.options = [];
         for (let i = 0 ; i < res.data.users.length; i++) {
           let obj = {};
@@ -78,5 +83,7 @@ class AddOrgAdminDialog extends React.Component {
     );
   }
 }
+
+AddOrgAdminDialog.propTypes = propTypes;
 
 export default AddOrgAdminDialog;

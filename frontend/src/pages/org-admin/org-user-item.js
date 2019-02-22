@@ -1,16 +1,24 @@
 import React, { Fragment } from 'react';
 
+import PropTypes from 'prop-types';
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 
-import { gettext, siteRoot } from '../../utils/constants';
+import { gettext, siteRoot, orgID, lang } from '../../utils/constants';
 import moment from 'moment';
 import { seafileAPI } from '../../utils/seafile-api';
 import Toast from '../../components/toast';
 import { Utils } from '../../utils/utils';
 import UserStatusEditor from '../../components/select-editor/user-status-editor';
 
-moment.locale(window.app.config.lang);
-const orgID = window.org.pageOptions.orgID;
+moment.locale(lang);
+
+const propTypes = {
+  currentStatus: PropTypes.bool.isRequired,
+  currentTab: PropTypes.string.isRequired,
+  toggleRevokeAdmin: PropTypes.func.isRequired,
+  toggleDelete: PropTypes.func.isRequired,
+};
+
 
 class UserItem extends React.Component {
 
@@ -171,5 +179,7 @@ class UserItem extends React.Component {
     );
   }
 }
+
+UserItem.propTypes = propTypes;
 
 export default UserItem;

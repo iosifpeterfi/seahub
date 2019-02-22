@@ -4,6 +4,11 @@ import { Button, Modal, Input, ModalHeader, ModalBody, Label, Form, InputGroup, 
 import { gettext, siteRoot, mediaUrl } from '../../utils/constants';
 import { seafileAPI } from '../../utils/seafile-api';
 
+const propTypes = {
+  toggle: PropTypes.func.isRequired,
+  handleSubmit: PropTypes.func.isRequired,
+};
+
 
 class AddOrgUserDialog extends React.Component {
   constructor(props) {
@@ -67,23 +72,6 @@ class AddOrgUserDialog extends React.Component {
     this.setState({passwdnew: passwd});
   }
 
-  validateParamsInput = () => {
-    let { password, passwdnew} = this.state;
-    // validate password
-    if (password.length === 0) {
-      this.setState({errorInfo: 'Please enter password'});
-      return false;
-    }
-    if (password.length < 8) {
-      this.setState({errorInfo: 'Password is too short'});
-      return false;
-    }
-    if (password !== passwdnew) {
-      this.setState({errorInfo: 'Passwords don\'t match'});
-      return false;
-    }
-  }
-
   toggle = () => {
     this.props.toggle();
   };
@@ -123,5 +111,7 @@ class AddOrgUserDialog extends React.Component {
     );
   }
 }
+
+AddOrgUserDialog.propTypes = propTypes;
 
 export default AddOrgUserDialog;

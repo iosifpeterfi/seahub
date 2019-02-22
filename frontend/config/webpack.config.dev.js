@@ -89,10 +89,10 @@ module.exports = {
       require.resolve('react-dev-utils/webpackHotDevClient'),
       paths.appSrc + "/shared-file-view-markdown.js",
     ],
-    org: [
+    orgAdmin: [
       require.resolve('./polyfills'),
       require.resolve('react-dev-utils/webpackHotDevClient'),
-      paths.appSrc + "/pages/org",
+      paths.appSrc + "/pages/org-admin",
     ]
   },
 

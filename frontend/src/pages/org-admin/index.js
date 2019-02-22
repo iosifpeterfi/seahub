@@ -61,9 +61,7 @@ class Org extends React.Component {
     this.setState({
       isShowAddOrgAdminDialog: !this.state.isShowAddOrgAdminDialog
     });
-
   } 
-
 
   render() {
     return (
