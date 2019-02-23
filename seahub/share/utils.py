@@ -1,4 +1,4 @@
-from seahub.group.utils import is_group_member
+from seahub.group.utils import is_group_member, is_group_admin
 from seahub.constants import PERMISSION_ADMIN, PERMISSION_READ_WRITE
 from seahub.share.models import ExtraSharePermission, ExtraGroupsSharePermission
 from seahub.utils import is_valid_org_id
@@ -12,7 +12,7 @@ def is_repo_admin(username, repo_id):
     belong_to_admin_group = False
     group_ids = ExtraGroupsSharePermission.objects.get_admin_groups_by_repo(repo_id)
     for group_id in group_ids:
-        if is_group_member(group_id, username):
+        if is_group_admin(group_id, username):
             belong_to_admin_group = True
             break
 
