@@ -5,12 +5,17 @@ develop: setup-git
 setup-git:
 	cd .git/hooks && ln -sf ../../hooks/* ./
 
-dist: locale statici18n collectstatic
+dist: locale uglify statici18n collectstatic
 
 locale:
 	@echo "--> Compile locales"
 	django-admin.py compilemessages
 	@echo ""
+
+uglify:
+	@echo "--> Uglify JS files to static/scripts/dist"
+	rm -rf static/scripts/dist 2> /dev/null
+	r.js -o static/scripts/build.js
 
 statici18n:
 	@echo "--> Generate JS locale files in static/scripts/i18n"
@@ -38,4 +43,4 @@ cleanpyc:
 	find . -name \*.pyc -exec rm -f {} \;
 	@echo ""
 
-.PHONY: develop setup-git dist locale statici18n collectstatic compressstatic clean
+.PHONY: develop setup-git dist locale uglify statici18n collectstatic compressstatic clean

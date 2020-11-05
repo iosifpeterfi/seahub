@@ -1,5 +1,5 @@
 # Copyright (c) 2012-2016 Seafile Ltd.
-
+from __future__ import unicode_literals
 
 import json
 
@@ -25,9 +25,9 @@ def json_response(func):
     def wrapped(*a, **kw):
         try:
             result = func(*a, **kw)
-        except BadRequestException as e:
+        except BadRequestException, e:
             return HttpResponseBadRequest(e.message)
-        except RequestForbbiddenException as e:
+        except RequestForbbiddenException, e:
             return HttpResponseForbidden(e.messages)
         if isinstance(result, HttpResponse):
             return result

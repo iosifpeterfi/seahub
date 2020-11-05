@@ -2,11 +2,9 @@ import React from 'react';
 import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 import PropTypes from 'prop-types';
 import toaster from '../toast';
-import copy from '../copy-to-clipboard';
+import copy from '@seafile/seafile-editor/dist//utils/copy-to-clipboard';
 import { gettext } from '../../utils/constants';
 import { seafileAPI } from '../../utils/seafile-api';
-import { Utils } from '../../utils/utils';
-
 import '../../css/internal-link.css';
 
 const propTypes = {
@@ -41,9 +39,6 @@ class InternalLinkDialog extends React.Component {
         isOpen: true,
         smartLink: res.data.smart_link
       });
-    }).catch(error => {
-      let errMessage = Utils.getErrorMsg(error);
-      toaster.danger(errMessage);
     });
   }
 
@@ -52,7 +47,7 @@ class InternalLinkDialog extends React.Component {
     this.setState({
       isOpen: false
     });
-    let message = gettext('Internal link has been copied to clipboard');
+    let message = gettext('Copy internal link');
     toaster.success(message), {
       duration: 2
     };
@@ -73,8 +68,8 @@ class InternalLinkDialog extends React.Component {
             </p>
           </ModalBody>
           <ModalFooter>
+            <Button color="primary" onClick={this.copyToClipBoard}>{gettext('Copy')}</Button>{' '}
             <Button color="secondary" onClick={this.toggle}>{gettext('Cancel')}</Button>
-            <Button color="primary" onClick={this.copyToClipBoard}>{gettext('Copy')}</Button>
           </ModalFooter>
         </Modal>
       </span>

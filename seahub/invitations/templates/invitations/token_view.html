@@ -22,7 +22,7 @@
 {% block extra_script %}
 <script type="text/javascript">
 $('form').on('submit', function() {
-    if (!$('[name="password"]', $(this)).val().trim()) {
+    if (!$.trim($('[name="password"]', $(this)).val())) {
         $('.error').html("{% trans "It is required." %}").show();
         return false;
     }

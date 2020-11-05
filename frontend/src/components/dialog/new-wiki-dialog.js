@@ -16,7 +16,6 @@ class NewWikiDialog extends React.Component {
       isExist: false,
       name: '',
       repoID: '',
-      isSubmitBtnActive: false,
     };
     this.newName = React.createRef();
   }
@@ -27,12 +26,6 @@ class NewWikiDialog extends React.Component {
   }
 
   inputNewName = (e) => {
-    if (!event.target.value.trim()) {
-      this.setState({isSubmitBtnActive: false});
-    } else {
-      this.setState({isSubmitBtnActive: true});
-    }
-
     this.setState({
       name: e.target.value,
     });
@@ -41,7 +34,7 @@ class NewWikiDialog extends React.Component {
   handleKeyPress = (e) => {
     if (e.key === 'Enter') {
       this.handleSubmit();
-    }
+    } 
   }
 
   handleSubmit = () => {
@@ -64,7 +57,7 @@ class NewWikiDialog extends React.Component {
         </ModalBody>
         <ModalFooter>
           <Button color="secondary" onClick={this.toggle}>{gettext('Cancel')}</Button>
-          <Button color="primary" onClick={this.handleSubmit} disabled={!this.state.isSubmitBtnActive}>{gettext('Submit')}</Button>
+          <Button color="primary" onClick={this.handleSubmit}>{gettext('Submit')}</Button>
         </ModalFooter>
       </Modal>
     );

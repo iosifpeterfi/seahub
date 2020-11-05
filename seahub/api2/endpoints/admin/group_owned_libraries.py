@@ -23,8 +23,7 @@ from seahub.utils.timeutils import timestamp_to_isoformat_timestr
 from seahub.share.signals import share_repo_to_group_successful
 from seahub.constants import PERMISSION_READ, PERMISSION_READ_WRITE
 
-from seahub.settings import ENABLE_STORAGE_CLASSES, STORAGE_CLASS_MAPPING_POLICY, \
-        ENCRYPTED_LIBRARY_VERSION
+from seahub.settings import ENABLE_STORAGE_CLASSES, STORAGE_CLASS_MAPPING_POLICY
 
 logger = logging.getLogger(__name__)
 
@@ -54,9 +53,6 @@ class AdminGroupOwnedLibraries(APIView):
     def post(self, request, group_id):
         """ Add a group owned library by system admin.
         """
-
-        if not request.user.admin_permissions.can_manage_group():
-            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
         # argument check
         repo_name = request.data.get("repo_name", None)
@@ -99,27 +95,22 @@ class AdminGroupOwnedLibraries(APIView):
                     return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
                 repo_id = seafile_api.add_group_owned_repo(group_id, repo_name,
-                        permission, password, enc_version=ENCRYPTED_LIBRARY_VERSION,
-                        storage_id=storage_id)
+                        password, permission, storage_id)
             else:
                 # STORAGE_CLASS_MAPPING_POLICY == 'REPO_ID_MAPPING'
-                if org_id and org_id > 0:
+                if org_id > 0:
                     repo_id = seafile_api.org_add_group_owned_repo(
-                        org_id, group_id, repo_name, permission, password,
-                        ENCRYPTED_LIBRARY_VERSION)
+                        org_id, group_id, repo_name, password, permission)
                 else:
                     repo_id = seafile_api.add_group_owned_repo(
-                        group_id, repo_name, permission, password,
-                        ENCRYPTED_LIBRARY_VERSION)
+                        group_id, repo_name, password, permission)
         else:
-            if org_id and org_id > 0:
+            if org_id > 0:
                 repo_id = seafile_api.org_add_group_owned_repo(
-                    org_id, group_id, repo_name, permission, password,
-                    ENCRYPTED_LIBRARY_VERSION)
+                    org_id, group_id, repo_name, password, permission)
             else:
                 repo_id = seafile_api.add_group_owned_repo(group_id, repo_name,
-                                                           permission, password,
-                                                           ENCRYPTED_LIBRARY_VERSION)
+                                                           password, permission)
 
         # for activities
         username = request.user.username
@@ -147,9 +138,6 @@ class AdminGroupOwnedLibrary(APIView):
     def delete(self, request, group_id, repo_id):
         """ Delete a group owned library by system admin.
         """
-
-        if not request.user.admin_permissions.can_manage_group():
-            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
         repo = seafile_api.get_repo(repo_id)
         if not repo:

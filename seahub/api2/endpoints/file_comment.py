@@ -16,7 +16,6 @@ from seahub.avatar.settings import AVATAR_DEFAULT_SIZE
 from seahub.base.models import FileComment
 from seahub.utils.repo import is_repo_owner
 from seahub.views import check_folder_permission
-from seahub.constants import PERMISSION_READ_WRITE
 
 logger = logging.getLogger(__name__)
 
@@ -88,7 +87,8 @@ class FileCommentView(APIView):
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         # permission check
-        if check_folder_permission(request, repo_id, '/') != PERMISSION_READ_WRITE:
+        username = request.user.username
+        if username != file_comment.author and not is_repo_owner(request, repo_id, username):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
@@ -99,7 +99,7 @@ class FileCommentView(APIView):
                 file_comment.save()
             except Exception as e:
                 logger.error(e)
-                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal error.')
 
         if detail is not None:
             try:
@@ -107,16 +107,7 @@ class FileCommentView(APIView):
                 file_comment.save()
             except Exception as e:
                 logger.error(e)
-                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
-
-        comment = request.data.get('comment')
-        if comment is not None:
-            try:
-                file_comment.comment = comment
-                file_comment.save()
-            except Exception as e:
-                logger.error(e)
-                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal error.')
 
         try:
             avatar_size = int(request.GET.get('avatar_size', AVATAR_DEFAULT_SIZE))

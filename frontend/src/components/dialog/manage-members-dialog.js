@@ -3,10 +3,8 @@ import PropTypes from 'prop-types';
 import { gettext } from '../../utils/constants';
 import { Button, Modal, ModalHeader, ModalBody, ModalFooter, Table } from 'reactstrap';
 import { seafileAPI } from '../../utils/seafile-api.js';
-import RoleEditor from '../select-editor/role-editor';
+import RoleEditor from '../select-editor/role-eidtor';
 import UserSelect from '../user-select.js';
-import { Utils } from '../../utils/utils';
-import toaster from '../toast';
 import '../../css/manage-members-dialog.css';
 
 const propTypes = {
@@ -24,7 +22,6 @@ class ManageMembersDialog extends React.Component {
       groupMembers: [],
       selectedOption: null,
       errMessage: [],
-      isItemFreezed: false,
     };
   }
 
@@ -51,9 +48,6 @@ class ManageMembersDialog extends React.Component {
           errMessage: res.data.failed
         });
       }
-    }).catch(error => {
-      let errMessage = Utils.getErrorMsg(error);
-      toaster.danger(errMessage);
     });
   }
 
@@ -62,20 +56,11 @@ class ManageMembersDialog extends React.Component {
       this.setState({
         groupMembers: res.data
       });
-    }).catch(error => {
-      let errMessage = Utils.getErrorMsg(error);
-      toaster.danger(errMessage);
     });
   }
 
   onGroupMembersChange = () => {
     this.listGroupMembers();
-  }
-
-  toggleItemFreezed = (isFreezed) => {
-    this.setState({
-      isItemFreezed: isFreezed
-    });
   }
 
   toggle = () => {
@@ -92,13 +77,13 @@ class ManageMembersDialog extends React.Component {
         <ModalHeader toggle={this.toggle}>{gettext('Manage group members')}</ModalHeader>
         <ModalBody>
           <p>{gettext('Add group member')}</p>
-          <div className='add-members'>
+          <div className='group-transfer'>
             <UserSelect
-              placeholder={gettext('Search users...')}
+              placeholder='Search users...'
               onSelectChange={this.onSelectChange}
               ref="userSelect"
               isMulti={true}
-              className="add-members-select"
+              className="group-transfer-select"
             />
             {this.state.selectedOption ?
               <Button color="secondary" onClick={this.addGroupMember}>{gettext('Submit')}</Button> :
@@ -114,7 +99,7 @@ class ManageMembersDialog extends React.Component {
             })
           }
           <div className="manage-members">
-            <Table size="sm" className="manage-members-table">
+            <Table hover size="sm" className="manage-members-table">
               <thead>
                 <tr>
                   <th width="15%"></th>
@@ -134,8 +119,6 @@ class ManageMembersDialog extends React.Component {
                           onGroupMembersChange={this.onGroupMembersChange}
                           groupID={this.props.groupID}
                           isOwner={this.props.isOwner}
-                          isItemFreezed={this.state.isItemFreezed}
-                          toggleItemFreezed={this.toggleItemFreezed}
                         />
                       </React.Fragment>
                     );
@@ -167,9 +150,6 @@ class Member extends React.PureComponent {
   constructor(props) {
     super(props);
     this.roles = ['Admin', 'Member'];
-    this.state = ({
-      highlight: false,
-    });
   }
 
   onChangeUserRole = (role) => {
@@ -177,70 +157,36 @@ class Member extends React.PureComponent {
     seafileAPI.setGroupAdmin(this.props.groupID, this.props.item.email, isAdmin).then((res) => {
       this.props.onGroupMembersChange();
     });
-    this.setState({
-      highlight: false,
-    });
   }
 
   deleteMember = (name) => {
     seafileAPI.deleteGroupMember(this.props.groupID, name).then((res) => {
       this.props.onGroupMembersChange();
-    }).catch(error => {
-      let errMessage = Utils.getErrorMsg(error);
-      toaster.danger(errMessage);
     });
-  }
-
-  handleMouseOver = () => {
-    if (this.props.isItemFreezed) return;
-    this.setState({
-      highlight: true,
-    });
-  }
-
-  handleMouseLeave = () => {
-    if (this.props.isItemFreezed) return;
-    this.setState({
-      highlight: false,
-    });
-  }
-
-  translateRole = (role) => {
-    if (role === 'Admin') {
-      return gettext('Admin');
-    }
-    else if (role === 'Member') {
-      return gettext('Member');
-    }
-    else if (role === 'Owner') {
-      return gettext('Owner');
-    }
   }
 
   render() {
     const { item, isOwner } = this.props;
-    const deleteAuthority = (item.role !== 'Owner' && isOwner === true) || (item.role === 'Member' && isOwner === false);
     return(
-      <tr onMouseOver={this.handleMouseOver} onMouseLeave={this.handleMouseLeave} className={this.state.highlight ? 'editing' : ''}>
+      <tr>
         <th scope="row"><img className="avatar" src={item.avatar_url} alt=""/></th>
         <td>{item.name}</td>
         <td>
-          {((isOwner === false) || (isOwner === true && item.role === 'Owner')) &&
-            <span className="group-admin">{this.translateRole(item.role)}</span>
+          {((isOwner === false) || (isOwner === true && item.role === 'Owner')) && 
+            <span className="group-admin">{item.role}</span>
           }
           {(isOwner === true && item.role !== 'Owner') &&
-            <RoleEditor
+            <RoleEditor 
               isTextMode={true}
-              isEditIconShow={this.state.highlight}
-              currentRole={item.role}
+              isEditIconShow={true}
+              currentRole={this.props.item.role}
               roles={this.roles}
               onRoleChanged={this.onChangeUserRole}
-              toggleItemFreezed={this.props.toggleItemFreezed}
             />
           }
         </td>
         <td>
-          {(deleteAuthority && !this.props.isItemFreezed) &&
+          {((item.role !== 'Owner' && isOwner === true) || (item.role === 'Member' && isOwner === false)) &&
             <i
               className="fa fa-times delete-group-member-icon"
               name={item.email}

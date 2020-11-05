@@ -5,8 +5,6 @@ import MarkdownViewer from '@seafile/seafile-editor/dist/viewer/markdown-viewer'
 import Loading from '../../components/loading';
 import { seafileAPI } from '../../utils/seafile-api';
 import { gettext } from '../../utils/constants';
-import { Utils } from '../../utils/utils';
-import toaster from '../toast';
 
 const propTypes = {
   repoID: PropTypes.string.isRequired,
@@ -32,11 +30,8 @@ class ReadmeDialog extends React.Component {
         this.setState({
           readmeContent: res.data,
           isLoading: false,
-        });
+        }); 
       });
-    }).catch(error => {
-      let errMessage = Utils.getErrorMsg(error);
-      toaster.danger(errMessage);
     });
   }
 
@@ -47,7 +42,7 @@ class ReadmeDialog extends React.Component {
           <a className="readme-dialog-edit" href={this.props.href} target='_blank'><i className="fa fa-pencil-alt"></i></a>
         </ModalHeader>
         <ModalBody>
-          {this.state.isLoading ?
+          {this.state.isLoading ? 
             <Loading />:
             <MarkdownViewer markdownContent={this.state.readmeContent} showTOC={false}/>
           }

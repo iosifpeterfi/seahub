@@ -8,7 +8,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from seaserv import seafile_api
 from pysearpc import SearpcError
-from django.urls import reverse
+from django.db.models import Count
+from django.core.urlresolvers import reverse
 
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.permissions import IsRepoAccessible
@@ -18,9 +19,6 @@ from seahub.avatar.settings import AVATAR_DEFAULT_SIZE
 from seahub.base.models import FileComment
 from seahub.utils.repo import get_repo_owner
 from seahub.signals import comment_file_successful
-from seahub.drafts.signals import comment_draft_successful
-from seahub.drafts.utils import is_draft_file
-from seahub.drafts.models import Draft
 from seahub.api2.endpoints.utils import generate_links_header_for_paginator
 from seahub.views import check_folder_permission
 
@@ -107,7 +105,7 @@ class FileCommentsView(APIView):
         except SearpcError as e:
             logger.error(e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR,
-                             'Internal Server Error')
+                             'Internal error.')
         if not file_id:
             return api_error(status.HTTP_404_NOT_FOUND, 'File not found.')
 
@@ -121,24 +119,12 @@ class FileCommentsView(APIView):
             repo_id=repo_id, file_path=path, author=username, comment=comment, detail=detail)
         repo = seafile_api.get_repo(repo_id)
         repo_owner = get_repo_owner(request, repo.id)
-
-        if is_draft_file(repo_id, path):
-            draft = Draft.objects.filter(origin_repo_id=repo_id, draft_file_path=path)
-            if draft:
-                draft = draft[0]
-                comment_draft_successful.send(sender=None,
-                                              draft=draft,
-                                              comment=comment,
-                                              author=username)
-            else:
-                Draft.DoesNotExist
-        else:
-            comment_file_successful.send(sender=None,
-                                         repo=repo,
-                                         repo_owner=repo_owner,
-                                         file_path=path,
-                                         comment=comment,
-                                         author=username)
+        comment_file_successful.send(sender=None,
+                                     repo=repo,
+                                     repo_owner=repo_owner,
+                                     file_path=path,
+                                     comment=comment,
+                                     author=username)
 
         comment = file_comment.to_dict()
         comment.update(user_to_dict(username, request=request, avatar_size=avatar_size))

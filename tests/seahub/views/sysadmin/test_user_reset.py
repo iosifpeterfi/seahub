@@ -1,6 +1,6 @@
 from mock import patch
 from django.core import mail
-from django.urls import reverse
+from django.core.urlresolvers import reverse
 import pytest
 pytestmark = pytest.mark.django_db
 

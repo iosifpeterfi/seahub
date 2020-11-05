@@ -4,7 +4,7 @@ import moment from 'moment';
 import { isPro, gettext, mediaUrl, siteRoot } from '../../utils/constants';
 import InternalLinkDialog from '../dialog/internal-link-dialog';
 
-const propTypes = {
+const propTypes = { 
   toggleStar: PropTypes.func.isRequired,
   isLocked: PropTypes.bool.isRequired,
   isStarred: PropTypes.bool.isRequired
@@ -49,9 +49,9 @@ class FileInfo extends React.PureComponent {
             />
           }
         </h2>
-        <div className="meta-info">
+        <div className="last-modification">
           <a href={`${siteRoot}profile/${encodeURIComponent(latestContributor)}/`}>{latestContributorName}</a>
-          <span className="ml-2">{moment(lastModificationTime * 1000).format('YYYY-MM-DD HH:mm')}</span>
+          <span className="last-modification-time">{moment(lastModificationTime * 1000).format('YYYY-MM-DD HH:mm')}</span>
         </div>
       </div>
     );

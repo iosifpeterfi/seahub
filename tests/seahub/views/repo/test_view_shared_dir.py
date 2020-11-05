@@ -1,5 +1,5 @@
 import os
-from django.urls import reverse
+from django.core.urlresolvers import reverse
 from django.test import TestCase
 
 from seahub.share.models import FileShare
@@ -24,7 +24,9 @@ class SharedDirTest(TestCase, Fixtures):
             reverse('view_shared_dir', args=[self.fs.token])
         )
         self.assertEqual(200, resp.status_code)
-        self.assertTemplateUsed(resp, 'view_shared_dir_react.html')
+        self.assertTemplateUsed(resp, 'view_shared_dir.html')
+
+        self.assertContains(resp, '<h2>%s</h2>' % self.repo.name)
 
     def test_cannot_render_enc_repo(self):
         share_file_info = {
@@ -82,7 +84,8 @@ class EncryptSharedDirTest(TestCase, Fixtures):
         )
 
         self.assertEqual(200, resp.status_code)
-        self.assertTemplateUsed(resp, 'view_shared_dir_react.html')
+        self.assertTemplateUsed(resp, 'view_shared_dir.html')
+        self.assertContains(resp, '<h2>%s</h2>' % self.repo.name)
 
     def test_wrong_password(self):
         resp = self.client.post(
@@ -103,14 +106,15 @@ class EncryptSharedDirTest(TestCase, Fixtures):
         )
 
         self.assertEqual(200, resp.status_code)
-        self.assertTemplateUsed(resp, 'view_shared_dir_react.html')
+        self.assertTemplateUsed(resp, 'view_shared_dir.html')
+        self.assertContains(resp, '<h2>%s</h2>' % self.repo.name)
 
         resp = self.client.get(
             reverse('view_shared_dir', args=[self.fs.token]) + '?p=' + self.sub_dir
         )
         self.assertEqual(200, resp.status_code)
         self.assertTemplateNotUsed(resp, 'share_access_validation.html')
-        self.assertTemplateUsed(resp, 'view_shared_dir_react.html')
+        self.assertTemplateUsed(resp, 'view_shared_dir.html')
 
     def test_view_file_via_shared_dir(self):
         resp = self.client.post(
@@ -121,14 +125,16 @@ class EncryptSharedDirTest(TestCase, Fixtures):
 
         self.assertEqual(200, resp.status_code)
         self.assertTemplateNotUsed(resp, 'share_access_validation.html')
-        self.assertTemplateUsed(resp, 'shared_file_view_react.html')
+        self.assertTemplateUsed(resp, 'shared_file_view.html')
+        self.assertContains(resp, '%s</h2>' % self.filename)
 
         resp = self.client.get(
             reverse('view_file_via_shared_dir', args=[self.fs.token]) + '?p=' + self.sub_file
         )
         self.assertEqual(200, resp.status_code)
         self.assertTemplateNotUsed(resp, 'share_access_validation.html')
-        self.assertTemplateUsed(resp, 'shared_file_view_react.html')
+        self.assertTemplateUsed(resp, 'shared_file_view.html')
+        self.assertContains(resp, '%s</h2>' % self.filename)
 
     def test_view_raw_file_via_shared_dir(self):
         resp = self.client.post(
@@ -139,7 +145,8 @@ class EncryptSharedDirTest(TestCase, Fixtures):
 
         self.assertEqual(200, resp.status_code)
         self.assertTemplateNotUsed(resp, 'share_access_validation.html')
-        self.assertTemplateUsed(resp, 'shared_file_view_react.html')
+        self.assertTemplateUsed(resp, 'shared_file_view.html')
+        self.assertContains(resp, '%s</h2>' % self.filename)
 
         resp = self.client.get(
             reverse('view_file_via_shared_dir', args=[self.fs.token]) + '?p=' + self.sub_file + '&raw=1'

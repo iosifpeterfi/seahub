@@ -1,8 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import TreeNodeMenu from './tree-node-menu';
 import { permission } from '../../utils/constants';
-import TextTranslation from '../../utils/text-translation';
-import ItemDropdownMenu from '../dropdown-menu/item-dropdown-menu';
 
 const propTypes = {
   repoPermission: PropTypes.bool,
@@ -15,14 +14,9 @@ const propTypes = {
   onNodeExpanded: PropTypes.func.isRequired,
   onNodeCollapse: PropTypes.func.isRequired,
   onNodeDragStart: PropTypes.func.isRequired,
-  freezeItem: PropTypes.func.isRequired,
-  unfreezeItem: PropTypes.func.isRequired,
+  onFreezedItem: PropTypes.func.isRequired,
+  onUnFreezedItem: PropTypes.func.isRequired,
   onMenuItemClick: PropTypes.func,
-  onNodeDragMove: PropTypes.func,
-  onNodeDrop: PropTypes.func,
-  handleContextClick: PropTypes.func.isRequired,
-  onNodeDragEnter: PropTypes.func.isRequired,
-  onNodeDragLeave:PropTypes.func.isRequired,
 };
 
 class TreeNodeView extends React.Component {
@@ -31,30 +25,11 @@ class TreeNodeView extends React.Component {
     super(props);
     this.state = {
       isHighlight: false,
-      isShowOperationMenu: false,
-      isNodeDropShow: false,
+      isShowOperationMenu: false
     };
   }
 
-  componentWillReceiveProps(nextProps) {
-    if (!nextProps.isItemFreezed) {
-      this.setState({
-        isShowOperationMenu: false,
-        isHighlight: false,
-      });
-    }
-  }
-
   onMouseEnter = () => {
-    if (!this.props.isItemFreezed) {
-      this.setState({
-        isShowOperationMenu: true,
-        isHighlight: true,
-      });
-    }
-  }
-
-  onMouseOver = () => {
     if (!this.props.isItemFreezed) {
       this.setState({
         isShowOperationMenu: true,
@@ -76,8 +51,7 @@ class TreeNodeView extends React.Component {
     this.props.onNodeClick(this.props.node);
   }
 
-  onLoadToggle = (e) => {
-    e.stopPropagation();
+  onLoadToggle = () => {
     let { node } = this.props;
     if (node.isExpanded) {
       this.props.onNodeCollapse(node);
@@ -90,51 +64,13 @@ class TreeNodeView extends React.Component {
     this.props.onNodeDragStart(e, this.props.node);
   }
 
-  onNodeDragEnter = (e) => {
-    if (this.props.node.object.type === 'dir') {
-      this.setState({isNodeDropShow: true});
-    }
-    this.props.onNodeDragEnter(e, this.props.node);
-  }
-
-  onNodeDragMove = (e) => {
-    this.props.onNodeDragMove(e);
-  }
-
-  onNodeDragLeave = (e) => {
-    this.setState({isNodeDropShow: false});
-    this.props.onNodeDragLeave(e, this.props.node);
-  }
-
-  onNodeDrop = (e) => {
-    e.stopPropagation();
-    this.setState({isNodeDropShow: false});
-    this.props.onNodeDrop(e, this.props.node);
-  }
-
-  unfreezeItem = () => {
+  onUnFreezedItem = () => {
     this.setState({isShowOperationMenu: false});
-    this.props.unfreezeItem();
+    this.props.onUnFreezedItem();
   }
 
-  onMenuItemClick = (operation, event, node) => {
+  onMenuItemClick = (operation, node) => {
     this.props.onMenuItemClick(operation, node);
-  }
-
-  onItemMouseDown = (event) => {
-    event.stopPropagation();
-    if (event.button === 2) {
-      return;
-    }
-  }
-
-  onItemContextMenu = (event) => {
-    this.handleContextClick(event);
-  }
-
-  handleContextClick = (event) => {
-    this.props.handleContextClick(event, this.props.node);
-    this.setState({isShowOperationMenu: false});
   }
 
   getNodeTypeAndIcon = () => {
@@ -151,31 +87,16 @@ class TreeNodeView extends React.Component {
         type = 'file';
       } else {
         let suffix = node.object.name.slice(index).toLowerCase();
-        if (suffix === '.png' || suffix === '.jpg' || suffix === '.jpeg' || suffix === '.gif' || suffix === '.bmp') {
+        if (suffix === '.png' || suffix === '.jpg') {
           icon = <i className="far fa-image"></i>;
           type = 'image';
-        }
-        else if (suffix === '.md' || suffix === '.markdown') {
-          icon = <i className="far fa-file-alt"></i>;
-          type = 'file';
-        }
-        else {
+        } else {
           icon = <i className="far fa-file"></i>;
           type = 'file';
         }
       }
     }
     return {icon, type};
-  }
-
-  caculateMenuList(node) {
-    let { NEW_FOLDER, NEW_FILE, COPY, MOVE, RENAME, DELETE, OPEN_VIA_CLIENT} =  TextTranslation;
-
-    if (node.object.type === 'dir') {
-      return [NEW_FOLDER, NEW_FILE, COPY, MOVE, RENAME, DELETE];
-    }
-
-    return [RENAME, DELETE, COPY, MOVE, OPEN_VIA_CLIENT];
   }
 
   renderChildren = () => {
@@ -187,7 +108,7 @@ class TreeNodeView extends React.Component {
       <div className="children" style={{paddingLeft: paddingLeft}}>
         {node.children.map(item => {
           return (
-            <TreeNodeView
+            <TreeNodeView 
               key={item.path}
               node={item}
               paddingLeft={paddingLeft}
@@ -198,15 +119,9 @@ class TreeNodeView extends React.Component {
               onNodeClick={this.props.onNodeClick}
               onNodeCollapse={this.props.onNodeCollapse}
               onNodeExpanded={this.props.onNodeExpanded}
-              freezeItem={this.props.freezeItem}
-              onMenuItemClick={this.props.onMenuItemClick}
-              unfreezeItem={this.unfreezeItem}
-              onNodeDragStart={this.props.onNodeDragStart}
-              onNodeDragMove={this.props.onNodeDragMove}
-              onNodeDrop={this.props.onNodeDrop}
-              onNodeDragEnter={this.props.onNodeDragEnter}
-              onNodeDragLeave={this.props.onNodeDragLeave}
-              handleContextClick={this.props.handleContextClick}
+              onFreezedItem={this.props.onFreezedItem}
+              onMenuItemClick={this.onMenuItemClick}
+              onUnFreezedItem={this.onUnFreezedItem}
             />
           );
         })}
@@ -223,21 +138,11 @@ class TreeNodeView extends React.Component {
     }
     return (
       <div className="tree-node">
-        <div
-          type={type}
-          className={`tree-node-inner text-nowrap ${hlClass} ${node.path === '/'? 'hide': ''} ${this.state.isNodeDropShow ? 'tree-node-drop' : ''}`}
-          title={node.object.name}
-          onMouseEnter={this.onMouseEnter}
-          onMouseOver={this.onMouseOver}
-          onMouseLeave={this.onMouseLeave}
-          onMouseDown={this.onItemMouseDown}
-          onContextMenu={this.onItemContextMenu}
-          onClick={this.onNodeClick}
-        >
-          <div className="tree-node-text" draggable="true" onDragStart={this.onNodeDragStart} onDragEnter={this.onNodeDragEnter} onDragLeave={this.onNodeDragLeave} onDragOver={this.onNodeDragMove} onDrop={this.onNodeDrop}>{node.object.name}</div>
+        <div type={type} onMouseEnter={this.onMouseEnter} onMouseLeave={this.onMouseLeave} className={`tree-node-inner text-nowrap ${hlClass} ${node.path === '/'? 'hide': ''}`}>
+          <div className="tree-node-text" draggable="true" onDragStart={this.onNodeDragStart} onClick={this.onNodeClick}>{node.object.name}</div>
           <div className="left-icon">
             {type === 'dir' && (!node.isLoaded ||  (node.isLoaded && node.hasChildren())) && (
-              <i
+              <i 
                 className={`folder-toggle-icon fa ${node.isExpanded ? 'fa-caret-down' : 'fa-caret-right'}`}
                 onMouseDown={e => e.stopPropagation()}
                 onClick={this.onLoadToggle}
@@ -248,13 +153,11 @@ class TreeNodeView extends React.Component {
           {isNodeMenuShow && (
             <div className="right-icon">
               {((this.props.repoPermission || permission) && this.state.isShowOperationMenu) && (
-                <ItemDropdownMenu
-                  item={this.props.node}
-                  toggleClass={'fas fa-ellipsis-v'}
-                  getMenuList={this.caculateMenuList}
+                <TreeNodeMenu 
+                  node={this.props.node}
                   onMenuItemClick={this.onMenuItemClick}
-                  freezeItem={this.props.freezeItem}
-                  unfreezeItem={this.unfreezeItem}
+                  onUnFreezedItem={this.onUnFreezedItem}
+                  onFreezedItem={this.props.onFreezedItem}
                 />
               )}
             </div>

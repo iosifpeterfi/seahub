@@ -1,11 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
-import moment from 'moment';
 import { gettext, siteRoot } from '../../utils/constants';
 import { seafileAPI } from '../../utils/seafile-api';
+import moment from 'moment';
 import { Utils } from '../../utils/utils';
-import toaster from '../toast';
 
 const propTypes = {
   repoID: PropTypes.string.isRequired,
@@ -13,7 +12,6 @@ const propTypes = {
   toggleCancel: PropTypes.func.isRequired,
   onClose: PropTypes.func.isRequired,
   updateUsedRepoTags: PropTypes.func.isRequired,
-  onFileTagChanged: PropTypes.func,
 };
 
 class ListTaggedFilesDialog extends React.Component {
@@ -25,23 +23,12 @@ class ListTaggedFilesDialog extends React.Component {
     };
   }
 
-  onFileTagChanged = (TaggedFile) => {
-    const path = TaggedFile.parent_path;
-    const dirent = {name: TaggedFile.filename};
-    let direntPath = path === '/' ? path + TaggedFile.filename : path + '/' + TaggedFile.filename;
-    this.props.onFileTagChanged(dirent, direntPath);
-  }
-
   onDeleteTaggedFile = (taggedFile) => {
     let repoID = this.props.repoID;
     let fileTagID = taggedFile.file_tag_id;
     seafileAPI.deleteFileTag(repoID, fileTagID).then(res => {
       this.getTaggedFiles();
       this.props.updateUsedRepoTags();
-      if ((this.props.onFileTagChanged) && !taggedFile.file_deleted) this.onFileTagChanged(taggedFile);
-    }).catch(error => {
-      let errMessage = Utils.getErrorMsg(error);
-      toaster.danger(errMessage);
     });
   }
 
@@ -61,9 +48,6 @@ class ListTaggedFilesDialog extends React.Component {
       this.setState({
         taggedFileList: taggedFileList,
       });
-    }).catch(error => {
-      let errMessage = Utils.getErrorMsg(error);
-      toaster.danger(errMessage);
     });
   }
 
@@ -143,16 +127,15 @@ class TaggedFile extends React.Component {
     return ( taggedFile.file_deleted ?
       <tr onMouseEnter={this.onMouseEnter} onMouseLeave={this.onMouseLeave}>
         <td colSpan='3' className="name">{taggedFile.filename}{' '}
-          <span style={{color:'red'}}>{gettext('deleted')}</span>
+          <span style={{color:"red"}}>{gettext('deleted')}</span>
         </td>
         <td><i className={className} onClick={this.props.onDeleteTaggedFile.bind(this, taggedFile)}></i></td>
       </tr>
       :
-      <tr onMouseEnter={this.onMouseEnter} onMouseLeave={this.onMouseLeave}>
+      <tr>
         <td className="name"><a href={href} target='_blank'>{taggedFile.filename}</a></td>
         <td>{Utils.bytesToSize(taggedFile.size)}</td>
-        <td>{moment.unix(taggedFile.mtime).fromNow()}</td>
-        <td><i className={className} onClick={this.props.onDeleteTaggedFile.bind(this, taggedFile)}></i></td>
+        <td colSpan='2'>{moment.unix(taggedFile.mtime).fromNow()}</td>
       </tr>
     );
   }

@@ -14,7 +14,6 @@ const propTypes = {
   onItemMove: PropTypes.func,
   onItemsMove: PropTypes.func,
   onCancelMove: PropTypes.func.isRequired,
-  repoEncrypted: PropTypes.bool.isRequired,
 };
 
 // need dirent file Path；
@@ -48,7 +47,7 @@ class MoveDirent extends React.Component {
     let { repoID } = this.props;
     let { repo, selectedPath } = this.state;
     let message = gettext('Invalid destination path');
-
+    
     if (!repo || selectedPath === '') {
       this.setState({errMessage: message});
       return;
@@ -60,7 +59,7 @@ class MoveDirent extends React.Component {
       let path = Utils.joinPath(this.props.path, dirent.name);
       direntPaths.push(path);
     });
-
+    
     // move dirents to one of them. eg: A/B, A/C -> A/B
     if (direntPaths.some(direntPath => { return direntPath === selectedPath;})) {
       this.setState({errMessage: message});
@@ -96,8 +95,7 @@ class MoveDirent extends React.Component {
   }
 
   moveItem = () => {
-    let { repoID } = this.props;
-    let { repo, selectedPath } = this.state;
+    let { repo, repoID, selectedPath } = this.state; 
     let direntPath = Utils.joinPath(this.props.path, this.props.dirent.name);
     let message = gettext('Invalid destination path');
 
@@ -105,19 +103,19 @@ class MoveDirent extends React.Component {
       this.setState({errMessage: message});
       return;
     }
-
+    
     // copy the dirent to itself. eg: A/B -> A/B
     if (selectedPath && direntPath === selectedPath) {
       this.setState({errMessage: message});
       return;
     }
-
+    
     // copy the dirent to current path
     if (selectedPath && this.props.path === selectedPath && repo.repo_id === repoID) {
       this.setState({errMessage: message});
       return;
     }
-
+    
     // copy the dirent to it's child. eg: A/B -> A/B/C
     if ( selectedPath && selectedPath.length > direntPath.length && selectedPath.indexOf(direntPath) > -1) {
       message = gettext('Can not move directory %(src)s to its subdirectory %(des)s');
@@ -127,7 +125,7 @@ class MoveDirent extends React.Component {
       return;
     }
 
-    this.props.onItemMove(repo, this.props.dirent, selectedPath, this.props.path);
+    this.props.onItemMove(repo, this.props.dirent, selectedPath);
     this.toggle();
   }
 
@@ -152,22 +150,21 @@ class MoveDirent extends React.Component {
   }
 
   render() {
-    let title = gettext('Move {placeholder} to');
+    let title = gettext('Move {placeholder} to:');
     if (!this.props.isMutipleOperation) {
       title = title.replace('{placeholder}', '<span class="op-target">' + Utils.HTMLescape(this.props.dirent.name) + '</span>');
     } else {
       title = gettext('Move selected item(s) to:');
     }
-    let mode = this.props.repoEncrypted ? 'only_current_library':'current_repo_and_other_repos';
     return (
       <Modal isOpen={true} toggle={this.toggle}>
         <ModalHeader toggle={this.toggle}><div dangerouslySetInnerHTML={{__html: title}}></div></ModalHeader>
         <ModalBody>
-          <FileChooser
+          <FileChooser 
             repoID={this.props.repoID}
             onDirentItemClick={this.onDirentItemClick}
             onRepoItemClick={this.onRepoItemClick}
-            mode={mode}
+            mode="current_repo_and_other_repos"
           />
           {this.state.errMessage && <Alert color="danger" style={{margin: '0.5rem'}}>{this.state.errMessage}</Alert>}
         </ModalBody>

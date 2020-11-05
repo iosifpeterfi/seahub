@@ -1,5 +1,5 @@
 import os
-import urllib.parse
+import urlparse
 import requests
 import splinter
 from selenium.webdriver.common.by import By
@@ -29,7 +29,7 @@ class Browser(object):
 
     @property
     def path(self):
-        return urllib.parse.urlparse(self.b.url).path
+        return urlparse.urlparse(self.b.url).path
 
     def visit(self, url):
         if not url.startswith('http'):

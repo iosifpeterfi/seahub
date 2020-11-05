@@ -1,8 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import Select from 'react-select';
 import { Button, Modal, ModalHeader, Input, ModalBody, ModalFooter, Form, FormGroup, Label, Alert } from 'reactstrap';
-import { gettext, enableEncryptedLibrary, repoPasswordMinLength, storages } from '../../utils/constants';
+import { gettext, enableEncryptedLibrary } from '../../utils/constants';
 
 const propTypes = {
   libraryType: PropTypes.string.isRequired,
@@ -20,20 +19,12 @@ class CreateRepoDialog extends React.Component {
       password1: '',
       password2: '',
       errMessage: '',
-      permission: 'rw',
-      storage_id: storages.length ? storages[0].id : '',
-      isSubmitBtnActive: false,
+      permission: 'rw'
     };
     this.newInput = React.createRef();
   }
 
   handleRepoNameChange = (e) => {
-    if (!e.target.value.trim()) {
-      this.setState({isSubmitBtnActive: false});
-    } else {
-      this.setState({isSubmitBtnActive: true});
-    }
-
     this.setState({repoName: e.target.value});
   }
 
@@ -46,16 +37,15 @@ class CreateRepoDialog extends React.Component {
   }
 
   handleSubmit = () => {
-    let isValid = this.validateInputParams();
+    let isValid= this.validateInputParams();
     if (isValid) {
-      let repoData = this.prepareRepoData();
-      if (this.props.libraryType === 'department') {
-        this.props.onCreateRepo(repoData, 'department');
-        return;
-      }
-      this.props.onCreateRepo(repoData);
+      let repoName = this.state.repoName.trim();
+      let password = this.state.encrypt ? this.state.password1 : '';
+      let permission= this.state.permission;
+      let repo = this.createRepo(repoName, password, permission);
+      this.props.onCreateRepo(repo);
     }
-  }
+  } 
 
   handleKeyPress = (e) => {
     if (e.key === 'Enter') {
@@ -98,7 +88,7 @@ class CreateRepoDialog extends React.Component {
         this.setState({errMessage: errMessage});
         return false;
       }
-      if (password1.length < repoPasswordMinLength) {
+      if (password1.length < 8) {
         errMessage = gettext('Password is too short');
         this.setState({errMessage: errMessage});
         return false;
@@ -117,10 +107,6 @@ class CreateRepoDialog extends React.Component {
     this.setState({permission: permission});
   }
 
-  handleStorageInputChange = (selectedItem) => {
-    this.setState({storage_id: selectedItem.value});
-  }
-
   onEncrypted = (e) => {
     let isChecked = e.target.checked;
     this.setState({
@@ -129,18 +115,25 @@ class CreateRepoDialog extends React.Component {
     });
   }
 
-  prepareRepoData = () => {
+  createRepo = (repoName, password, permission) => {
     let libraryType = this.props.libraryType;
-
-    let repoName = this.state.repoName.trim();
-    let password = this.state.encrypt ? this.state.password1 : '';
-    let permission = this.state.permission;
-
+    let encrypt = password ? true : false;
     let repo = null;
     if (libraryType === 'mine' || libraryType === 'public') {
       repo = {
+        id: null,
         name: repoName,
-        passwd: password
+        desc: '',
+        encrypted: encrypt,
+        passwd: password,
+        passwd1: password,
+        passwd2: password,
+        mtime: 0,
+        mtime_relative: '',
+        owner: '-',
+        owner_nickname: '-',
+        permission: 'rw',
+        storage_name: '-',
       };
     }
     if (libraryType === 'group') {
@@ -150,18 +143,6 @@ class CreateRepoDialog extends React.Component {
         permission: permission,
       };
     }
-    if (libraryType === 'department') {
-      repo = {
-        repo_name: repoName,
-        passwd: password,
-      };
-    }
-
-    const storage_id = this.state.storage_id;
-    if (storage_id) {
-      repo.storage_id = storage_id;
-    }
-
     return repo;
   }
 
@@ -173,25 +154,14 @@ class CreateRepoDialog extends React.Component {
           <Form>
             <FormGroup>
               <Label for="repoName">{gettext('Name')}</Label>
-              <Input
+              <Input 
                 id="repoName"
-                onKeyPress={this.handleKeyPress}
-                innerRef={input => {this.newInput = input;}}
-                value={this.state.repoName}
+                onKeyPress={this.handleKeyPress} 
+                innerRef={input => {this.newInput = input;}} 
+                value={this.state.repoName} 
                 onChange={this.handleRepoNameChange}
               />
             </FormGroup>
-            {storages.length > 0 && (
-              <FormGroup>
-                <Label for="storage-backend">{gettext('Storage Backend')}</Label>
-                <Select
-                  id="storage-backend"
-                  defaultValue={{value: storages[0].id, label: storages[0].name}}
-                  options={storages.map((item, index) => { return {value: item.id, label: item.name}; })}
-                  onChange={this.handleStorageInputChange}
-                />
-              </FormGroup>
-            )}
             {this.props.libraryType === 'group' && (
               <FormGroup>
                 <Label for="exampleSelect">{gettext('Permission')}</Label>
@@ -204,44 +174,37 @@ class CreateRepoDialog extends React.Component {
             {enableEncryptedLibrary &&
               <div>
                 <FormGroup check>
-                  <Input type="checkbox" id="encrypt" onChange={this.onEncrypted} />
+                  <Input type="checkbox" id="encrypt" onChange={this.onEncrypted}/>
                   <Label for="encrypt">{gettext('Encrypt')}</Label>
                 </FormGroup>
-                {!this.state.disabled &&
-                  <FormGroup>
-                    {/* todo translate */}
-                    <Label for="passwd1">{gettext('Password')}</Label><span className="tip">{' '}{gettext('(at least {placeholder} characters)').replace('{placeholder}', repoPasswordMinLength)}</span>
-                    <Input
-                      id="passwd1"
-                      type="password"
-                      disabled={this.state.disabled}
-                      value={this.state.password1}
-                      onChange={this.handlePassword1Change}
-                      autoComplete="new-password"
-                    />
-                  </FormGroup>
-                }
-                {!this.state.disabled &&
-                  <FormGroup>
-                    <Label for="passwd2">{gettext('Password again')}</Label>
-                    <Input
-                      id="passwd2"
-                      type="password"
-                      disabled={this.state.disabled}
-                      value={this.state.password2}
-                      onChange={this.handlePassword2Change}
-                      autoComplete="new-password"
-                    />
-                  </FormGroup>
-                }
+                <FormGroup>
+                  {/* todo translate */}
+                  <Label for="passwd1" className="font-weight-bold">{gettext('Password')}{' '}</Label><span className="tip">{gettext('(at least 8 characters)')}</span>
+                  <Input 
+                    id="passwd1" 
+                    type="password"
+                    disabled={this.state.disabled}
+                    value={this.state.password1} 
+                    onChange={this.handlePassword1Change}
+                  />
+                </FormGroup>
+                <FormGroup>
+                  <Label for="passwd2" className="font-weight-bold">{gettext('Password again')}</Label>
+                  <Input 
+                    id="passwd2"
+                    type="password"
+                    disabled={this.state.disabled}
+                    value={this.state.password2} 
+                    onChange={this.handlePassword2Change}
+                  />
+                </FormGroup>
               </div>
             }
           </Form>
           {this.state.errMessage && <Alert color="danger">{this.state.errMessage}</Alert>}
         </ModalBody>
         <ModalFooter>
-          <Button color="secondary" onClick={this.toggle}>{gettext('Cancel')}</Button>
-          <Button color="primary" onClick={this.handleSubmit} disabled={!this.state.isSubmitBtnActive}>{gettext('Submit')}</Button>
+          <Button color="primary" onClick={this.handleSubmit}>{gettext('Submit')}</Button>
         </ModalFooter>
       </Modal>
     );

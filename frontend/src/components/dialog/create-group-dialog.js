@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import { gettext } from '../../utils/constants';
 import { seafileAPI } from '../../utils/seafile-api';
 import { Modal, ModalHeader, ModalBody, ModalFooter, Input, Button } from 'reactstrap';
-import { Utils } from '../../utils/utils';
 
 class CreateGroupDialog extends React.Component {
 
@@ -12,24 +11,11 @@ class CreateGroupDialog extends React.Component {
     this.state = {
       groupName: '',
       errorMsg: '',
-      isSubmitBtnActive: false,
     };
-    this.newInput = React.createRef();
-  }
-
-  componentDidMount() {
-    this.newInput.focus();
-    this.newInput.setSelectionRange(0, 0);
   }
 
   handleGroupChange = (event) => {
-    let name = event.target.value;
-
-    if (!name.trim()) {
-      this.setState({isSubmitBtnActive: false});
-    } else {
-      this.setState({isSubmitBtnActive: true});
-    }
+    let name = event.target.value.trim();
     this.setState({
       groupName: name
     });
@@ -47,12 +33,10 @@ class CreateGroupDialog extends React.Component {
       seafileAPI.createGroup(name).then((res)=> {
         that.props.onCreateGroup();
       }).catch((error) => {
-        let errorMsg = Utils.getErrorMsg(error);
-        this.setState({errorMsg: errorMsg});
-      });
-    } else {
-      this.setState({
-        errorMsg: gettext('Name is required')
+        let errorMsg = gettext(error.response.data.error_msg);
+        this.setState({
+          errorMsg: errorMsg
+        });
       });
     }
     this.setState({
@@ -63,29 +47,22 @@ class CreateGroupDialog extends React.Component {
   handleKeyDown = (e) => {
     if (e.keyCode === 13) {
       this.handleSubmitGroup();
-      e.preventDefault();
     }
   }
 
   render() {
     return(
       <Modal isOpen={this.props.showAddGroupModal} toggle={this.props.toggleAddGroupModal}>
-        <ModalHeader toggle={this.props.toggleAddGroupModal}>{gettext('New Group')}</ModalHeader>
+        <ModalHeader toggle={this.toggle}>{gettext('New Group')}</ModalHeader>
         <ModalBody>
           <label htmlFor="groupName">{gettext('Name')}</label>
-          <Input
-            innerRef={input => {this.newInput = input;}}
-            type="text"
-            id="groupName"
-            value={this.state.groupName}
-            onChange={this.handleGroupChange}
-            onKeyDown={this.handleKeyDown}
-          />
+          <Input type="text" id="groupName" value={this.state.groupName}
+            onChange={this.handleGroupChange} onKeyDown={this.handleKeyDown}/>
           <span className="error">{this.state.errorMsg}</span>
         </ModalBody>
         <ModalFooter>
           <Button color="secondary" onClick={this.props.toggleAddGroupModal}>{gettext('Cancel')}</Button>
-          <Button color="primary" onClick={this.handleSubmitGroup} disabled={!this.state.isSubmitBtnActive}>{gettext('Submit')}</Button>
+          <Button color="primary" onClick={this.handleSubmitGroup}>{gettext('Submit')}</Button>
         </ModalFooter>
       </Modal>
     );

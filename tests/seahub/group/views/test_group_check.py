@@ -14,17 +14,17 @@ class GroupCheckTest(BaseTestCase):
         self.fake_request.user = AnonymousUser()
         resp = a_view(self.fake_request, self.group.id)
         self.assertEqual(resp.status_code, 302)
-        self.assertRegex(resp['Location'], '/accounts/login')
+        self.assertRegexpMatches(resp['Location'], '/accounts/login')
 
     def test_group_user(self):
         self.fake_request.user = self.user
         resp = a_view(self.fake_request, self.group.id)
         self.assertEqual(resp.status_code, 200)
-        assert b'success' in resp.content
+        assert 'success' in resp.content
 
     def test_admin_user(self):
         self.fake_request.user = self.admin
         resp = a_view(self.fake_request, self.group.id)
         self.assertEqual(resp.status_code, 200)
-        assert b'Permission denied' in resp.content
-        assert b'success' not in resp.content
+        assert 'Permission denied' in resp.content
+        assert 'success' not in resp.content

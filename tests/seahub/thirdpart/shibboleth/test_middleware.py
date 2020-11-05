@@ -10,7 +10,6 @@ from seahub.profile.models import Profile
 from seahub.test_utils import BaseTestCase
 from shibboleth import backends
 from shibboleth.middleware import ShibbolethRemoteUserMiddleware
-import importlib
 
 TRAVIS = 'TRAVIS' in os.environ
 
@@ -18,7 +17,7 @@ settings.AUTHENTICATION_BACKENDS += (
     'shibboleth.backends.ShibbolethRemoteUserBackend',
 )
 
-settings.MIDDLEWARE.append(
+settings.MIDDLEWARE_CLASSES += (
     'shibboleth.middleware.ShibbolethRemoteUserMiddleware',
 )
 
@@ -101,14 +100,14 @@ class ShibbolethRemoteUserMiddlewareTest(BaseTestCase):
 
         with self.settings(SHIB_ACTIVATE_AFTER_CREATION=False):
             # reload our shibboleth.backends module, so it picks up the settings change
-            importlib.reload(backends)
+            reload(backends)
 
             resp = self.middleware.process_request(self.request)
             assert resp.url == '/shib-complete/'
             assert len(Profile.objects.all()) == 0
 
         # now reload again, so it reverts to original settings
-        importlib.reload(backends)
+        reload(backends)
 
     def test_make_profile_for_display_name(self):
         assert len(Profile.objects.all()) == 0

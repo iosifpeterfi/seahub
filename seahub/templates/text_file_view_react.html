@@ -2,10 +2,6 @@
 {% load render_bundle from webpack_loader %}
 {% load seahub_tags %}
 
-{% block extra_style %}
-{% render_bundle 'viewFileText' 'css' %}
-{% endblock %}
-
 {% block extra_data %}
   fileExt: '{{ fileext|escapejs }}',
   fileEnc: '{{ file_enc|escapejs }}',
@@ -13,5 +9,5 @@
 {% endblock %}
 
 {% block render_bundle %}
-{% render_bundle 'viewFileText' 'js' %}
+{% render_bundle 'viewFileText' %}
 {% endblock %}

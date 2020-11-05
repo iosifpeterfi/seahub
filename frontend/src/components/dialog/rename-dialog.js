@@ -17,7 +17,6 @@ class Rename extends React.Component {
     this.state = {
       newName: '',
       errMessage: '',
-      isSubmitBtnActive: false,
     };
     this.newInput = React.createRef();
   }
@@ -42,15 +41,9 @@ class Rename extends React.Component {
   componentWillReceiveProps(nextProps) {
     this.changeState(nextProps.currentNode);
   }
-
+  
   handleChange = (e) => {
-    if (!e.target.value.trim()) {
-      this.setState({isSubmitBtnActive: false});
-    } else {
-      this.setState({isSubmitBtnActive: true});
-    }
-
-    this.setState({newName: e.target.value});
+    this.setState({newName: e.target.value}); 
   }
 
   handleSubmit = () => {
@@ -72,7 +65,7 @@ class Rename extends React.Component {
   handleKeyPress = (e) => {
     if (e.key === 'Enter') {
       this.handleSubmit();
-    }
+    } 
   }
 
   toggle = () => {
@@ -120,7 +113,7 @@ class Rename extends React.Component {
         </ModalBody>
         <ModalFooter>
           <Button color="secondary" onClick={this.toggle}>{gettext('Cancel')}</Button>
-          <Button color="primary" onClick={this.handleSubmit} disabled={!this.state.isSubmitBtnActive}>{gettext('Submit')}</Button>
+          <Button color="primary" onClick={this.handleSubmit}>{gettext('Submit')}</Button>
         </ModalFooter>
       </Modal>
     );

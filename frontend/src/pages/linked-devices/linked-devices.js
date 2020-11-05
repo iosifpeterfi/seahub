@@ -1,12 +1,8 @@
 import React, { Component } from 'react';
-import { Dropdown, DropdownToggle, DropdownItem } from 'reactstrap';
 import moment from 'moment';
 import { seafileAPI } from '../../utils/seafile-api';
-import { gettext } from '../../utils/constants';
+import { gettext, loginUrl } from '../../utils/constants';
 import toaster from '../../components/toast';
-import EmptyTip from '../../components/empty-tip';
-import ConfirmUnlinkDeviceDialog from '../../components/dialog/confirm-unlink-device';
-import { Utils } from '../../utils/utils';
 
 class Content extends Component {
 
@@ -18,13 +14,6 @@ class Content extends Component {
     } else if (errorMsg) {
       return <p className="error text-center">{errorMsg}</p>;
     } else {
-      const emptyTip = (
-        <EmptyTip>
-          <h2>{gettext('No linked devices')}</h2>
-          <p>{gettext('You have not accessed your files with any client (desktop or mobile) yet. Configure clients on your devices to access your data more comfortably.')}</p>
-        </EmptyTip>
-      );
-
       const desktopThead = (
         <thead>
           <tr>
@@ -39,24 +28,41 @@ class Content extends Component {
       const mobileThead = (
         <thead>
           <tr>
-            <th width="92%"></th>
-            <th width="8%"></th>
+            <th width="25%">{gettext('Platform')}</th>
+            <th width="70%">{gettext('Device Name')}</th>
+            <th width="5%"></th>
           </tr>
         </thead>
       );
 
-      const isDesktop = Utils.isDesktop();
-      return items.length ? (
-        <table className={`table-hover ${isDesktop ? '': 'table-thead-hidden'}`}>
-          {isDesktop ? desktopThead : mobileThead}
-          <tbody>
-            {items.map((item, index) => {
-              return <Item key={index} data={item} isDesktop={isDesktop} />;
-            })}
-          </tbody>
+      return (
+        <table>
+          {window.innerWidth >= 768 ? desktopThead : mobileThead}
+          <TableBody items={items} />
         </table>
-      ): emptyTip;
+      );
     }
+  }
+}
+
+class TableBody extends Component {
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      items: this.props.items
+    };
+  }
+
+  render() {
+
+    let listLinkedDevices = this.state.items.map(function(item, index) {
+      return <Item key={index} data={item} />;
+    }, this);
+
+    return (
+      <tbody>{listLinkedDevices}</tbody>
+    );
   }
 }
 
@@ -65,61 +71,43 @@ class Item extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      isOpMenuOpen: false, // for mobile
-      isOpIconShown: false,
-      unlinked: false,
-      isConfirmUnlinkDialogOpen: false
+      showOpIcon: false,
+      unlinked: false
     };
+
+    this.handleMouseOver = this.handleMouseOver.bind(this);
+    this.handleMouseOut = this.handleMouseOut.bind(this);
+    this.handleClick = this.handleClick.bind(this);
   }
 
-  toggleOpMenu = () => {
+  handleMouseOver() {
     this.setState({
-      isOpMenuOpen: !this.state.isOpMenuOpen
+      showOpIcon: true
     });
   }
 
-  handleMouseOver = () => {
+  handleMouseOut() {
     this.setState({
-      isOpIconShown: true
+      showOpIcon: false
     });
   }
 
-  handleMouseOut = () => {
-    this.setState({
-      isOpIconShown: false
-    });
-  }
-
-  toggleDialog = () => {
-    this.setState({
-      isConfirmUnlinkDialogOpen: !this.state.isConfirmUnlinkDialogOpen
-    });
-  }
-
-  handleClick = (e) => {
+  handleClick(e) {
     e.preventDefault();
 
     const data = this.props.data;
-    if (data.is_desktop_client) {
-      this.toggleDialog();
-    } else {
-      const wipeDevice = true;
-      this.unlinkDevice(wipeDevice);
-    }
-  }
 
-  unlinkDevice = (wipeDevice) => {
-    const data = this.props.data;
-    seafileAPI.unlinkDevice(data.platform, data.device_id, wipeDevice).then((res) => {
+    seafileAPI.unlinkDevice(data.platform, data.device_id).then((res) => {
       this.setState({
         unlinked: true
       });
-      let msg = gettext('Successfully unlinked %(name)s.');
-      msg = msg.replace('%(name)s', data.device_name);
-      toaster.success(msg);
+      let msg_s = gettext('Successfully unlink %(name)s.');
+      msg_s = msg_s.replace('%(name)s', data.device_name);
+      toaster.success(msg_s);
     }).catch((error) => {
-      let errMessage = Utils.getErrorMsg(error);
-      toaster.danger(errMessage);
+      let message = gettext('Failed to unlink %(name)s');
+      message = message.replace('%(name)s', data.device_name);
+      toaster.danger(message);
     });
   }
 
@@ -131,7 +119,7 @@ class Item extends Component {
     const data = this.props.data;
 
     let opClasses = 'sf2-icon-delete unlink-device action-icon';
-    opClasses += this.state.isOpIconShown ? '' : ' invisible';
+    opClasses += this.state.showOpIcon ? '' : ' invisible';
 
     const desktopItem = (
       <tr onMouseOver={this.handleMouseOver} onMouseOut={this.handleMouseOut}>
@@ -147,43 +135,19 @@ class Item extends Component {
 
     const mobileItem = (
       <tr>
+        <td>{data.platform}</td>
+        <td>{data.device_name}</td>
         <td>
-          {data.device_name}<br />
-          <span className="item-meta-info">{data.last_login_ip}</span>
-          <span className="item-meta-info">{moment(data.last_accessed).fromNow()}</span>
-          <span className="item-meta-info">{data.platform}</span>
-        </td>
-        <td>
-          <Dropdown isOpen={this.state.isOpMenuOpen} toggle={this.toggleOpMenu}>
-            <DropdownToggle
-              tag="i"
-              className="sf-dropdown-toggle fa fa-ellipsis-v ml-0"
-              title={gettext('More Operations')}
-              data-toggle="dropdown"
-              aria-expanded={this.state.isOpMenuOpen}
-            />
-            <div className={this.state.isOpMenuOpen ? '' : 'd-none'} onClick={this.toggleOpMenu}>
-              <div className="mobile-operation-menu-bg-layer"></div>
-              <div className="mobile-operation-menu">
-                <DropdownItem className="mobile-menu-item" onClick={this.handleClick}>{gettext('Unlink')}</DropdownItem>
-              </div>
-            </div>
-          </Dropdown>
+          <a href="#" className={opClasses} title={gettext('Unlink')} aria-label={gettext('Unlink')} onClick={this.handleClick}></a>
         </td>
       </tr>
     );
 
-    return (
-      <React.Fragment>
-        {this.props.isDesktop ? desktopItem : mobileItem}
-        {this.state.isConfirmUnlinkDialogOpen &&
-        <ConfirmUnlinkDeviceDialog
-          executeOperation={this.unlinkDevice}
-          toggleDialog={this.toggleDialog}
-        />
-        }
-      </React.Fragment>
-    );
+    if (window.innerWidth >= 768) {
+      return desktopItem;
+    } else {
+      return mobileItem;
+    }
   }
 }
 
@@ -199,15 +163,32 @@ class LinkedDevices extends Component {
 
   componentDidMount() {
     seafileAPI.listLinkedDevices().then((res) => {
+      //res: {data: Array(2), status: 200, statusText: "OK", headers: {…}, config: {…}, …}
       this.setState({
         loading: false,
         items: res.data
       });
     }).catch((error) => {
-      this.setState({
-        loading: false,
-        errorMsg: Utils.getErrorMsg(error, true) // true: show login tip if 403
-      });
+      if (error.response) {
+        if (error.response.status == 403) {
+          this.setState({
+            loading: false,
+            errorMsg: gettext('Permission denied')
+          });
+          location.href = `${loginUrl}?next=${encodeURIComponent(location.href)}`;
+        } else {
+          this.setState({
+            loading: false,
+            errorMsg: gettext('Error')
+          });
+        }
+
+      } else {
+        this.setState({
+          loading: false,
+          errorMsg: gettext('Please check the network.')
+        });
+      }
     });
   }
 

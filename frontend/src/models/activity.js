@@ -23,10 +23,9 @@ class Acticity {
     } else if (json.op_type === 'rename' && ['dir', 'file'].includes(json.obj_type)) {
       this.old_path = json.old_path;
       this.old_name = json.old_name;
-    } else if (json.op_type === 'publish') {
+    } else if (json.obj_type === 'review') {
       this.old_path = json.old_path;
-    } else if (json.name.endsWith('(draft).md')) {
-      this.draft_id = json.draft_id;
+      this.review_id = json.review_id;
     }
   }
 }

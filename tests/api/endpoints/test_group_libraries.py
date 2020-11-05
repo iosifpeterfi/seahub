@@ -1,7 +1,7 @@
 import json
 import pytest
 
-from django.urls import reverse
+from django.core.urlresolvers import reverse
 
 from seaserv import seafile_api, ccnet_api
 
@@ -228,7 +228,7 @@ class GroupLibraryTest(BaseTestCase):
 
         self.login_as(self.admin)
 
-        # commont user can not delete
+        # admin user can not delete
         resp = self.client.delete(self.group_library_url)
         self.assertEqual(403, resp.status_code)
 
@@ -240,12 +240,7 @@ class GroupLibraryTest(BaseTestCase):
         ExtraGroupsSharePermission.objects.create_share_permission(
                 self.repo_id, self.group_id, PERMISSION_ADMIN)
 
-        # repo admin user(not group admin) can not delete
-        resp = self.client.delete(self.group_library_url)
-        self.assertEqual(403, resp.status_code)
-
-        # repo admin user(also is group admin) can delete
-        ccnet_api.group_set_admin(self.group_id, self.admin_name)
+        # admin user can delete
         resp = self.client.delete(self.group_library_url)
         self.assertEqual(200, resp.status_code)
 

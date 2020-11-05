@@ -23,7 +23,7 @@ def get_backend(path):
     module, attr = path[:i], path[i+1:]
     try:
         mod = import_module(module)
-    except ImportError as e:
+    except ImportError, e:
         raise ImproperlyConfigured('Error loading registration backend %s: "%s"' % (module, e))
     try:
         backend_class = getattr(mod, attr)

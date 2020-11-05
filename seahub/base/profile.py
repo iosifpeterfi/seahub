@@ -26,14 +26,13 @@ THE SOFTWARE.
 try:
     import cProfile as profile
 except ImportError:
-    from . import profile
+    import profile
 
 import pstats
-from io import StringIO
+from cStringIO import StringIO
 from django.conf import settings
-from django.utils.deprecation import MiddlewareMixin
 
-class ProfilerMiddleware(MiddlewareMixin):
+class ProfilerMiddleware(object):
     """
     Simple profile middleware to profile django views. To run it, add ?prof to
     the URL like this:

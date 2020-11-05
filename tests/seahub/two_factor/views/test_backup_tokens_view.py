@@ -1,4 +1,4 @@
-from django.urls import reverse
+from django.core.urlresolvers import reverse
 import pytest
 pytestmark = pytest.mark.django_db
 
@@ -24,5 +24,5 @@ class BackupTokensViewTest(BaseTestCase):
     def test_user_2fa_not_enabled(self):
         resp = self.client.get(self.url)
         # redirect to 2fa setup page
-        self.assertRegex(resp['Location'],
+        self.assertRegexpMatches(resp['Location'],
                                  r'/profile/two_factor_authentication/setup/')

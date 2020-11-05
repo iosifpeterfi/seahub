@@ -30,7 +30,7 @@ def validate_group_name(group_name):
     """
     if len(group_name) > 255:
         return False
-    return re.match('^[\w\s\'\.-]+$', group_name, re.U)
+    return re.match('^[\w\s-]+$', group_name, re.U)
 
 def check_group_name_conflict(request, new_group_name):
     """Check if new group name conflict with existed group.
@@ -44,7 +44,7 @@ def check_group_name_conflict(request, new_group_name):
         checked_groups = seaserv.get_org_groups_by_user(org_id, username)
     else:
         if request.cloud_mode:
-            checked_groups = ccnet_api.get_groups(username)
+            checked_groups = seaserv.get_personal_groups_by_user(username)
         else:
             checked_groups = ccnet_api.search_groups(new_group_name, -1, -1)
 
@@ -95,7 +95,11 @@ def get_group_member_info(request, group_id, email, avatar_size=AVATAR_DEFAULT_S
     else:
         login_id = ''
 
-    avatar_url, is_default, date_uploaded = api_avatar_url(email, avatar_size)
+    try:
+        avatar_url, is_default, date_uploaded = api_avatar_url(email, avatar_size)
+    except Exception as e:
+        logger.error(e)
+        avatar_url = get_default_avatar_url()
 
     role = 'Member'
     group = ccnet_api.get_group(int(group_id))
@@ -111,7 +115,7 @@ def get_group_member_info(request, group_id, email, avatar_size=AVATAR_DEFAULT_S
         'email': email,
         "contact_email": Profile.objects.get_contact_email_by_user(email),
         "login_id": login_id,
-        "avatar_url": avatar_url,
+        "avatar_url": request.build_absolute_uri(avatar_url),
         "is_admin": is_admin,
         "role": role,
     }
@@ -136,9 +140,5 @@ def group_id_to_name(group_id):
 
     group_name = group.group_name
     cache.set(key, group_name, GROUP_ID_CACHE_TIMEOUT)
-    return group_name
 
-def set_group_name_cache(group_id, group_name):
-    group_id = str(group_id)
-    key = normalize_cache_key(group_id, GROUP_ID_CACHE_PREFIX)
-    cache.set(key, group_name, GROUP_ID_CACHE_TIMEOUT)
+    return group_name

@@ -14,7 +14,6 @@ const propTypes = {
   onItemCopy: PropTypes.func,
   onItemsCopy: PropTypes.func,
   onCancelCopy: PropTypes.func.isRequired,
-  repoEncrypted: PropTypes.bool.isRequired,
 };
 
 // need dirent file Path；
@@ -48,7 +47,7 @@ class CopyDirent extends React.Component {
     let { repoID } = this.props;
     let { repo, selectedPath } = this.state;
     let message = gettext('Invalid destination path');
-
+    
     if (!repo || selectedPath === '') {
       this.setState({errMessage: message});
       return;
@@ -60,9 +59,15 @@ class CopyDirent extends React.Component {
       let path = Utils.joinPath(this.props.path, dirent.name);
       direntPaths.push(path);
     });
-
+    
     // copy dirents to one of them. eg: A/B, A/C -> A/B
     if (direntPaths.some(direntPath => { return direntPath === selectedPath;})) {
+      this.setState({errMessage: message});
+      return;
+    }
+
+    // copy dirents to current path
+    if (selectedPath && selectedPath === this.props.path && repo.repo_id === repoID) {
       this.setState({errMessage: message});
       return;
     }
@@ -84,13 +89,13 @@ class CopyDirent extends React.Component {
       this.setState({errMessage: message});
       return;
     }
-
+    
     this.props.onItemsCopy(repo, selectedPath);
     this.toggle();
   }
 
   copyItem = () => {
-    let { repo, repoID, selectedPath } = this.state;
+    let { repo, repoID, selectedPath } = this.state; 
     let direntPath = Utils.joinPath(this.props.path, this.props.dirent.name);
     let message = 'Invalid destination path';
 
@@ -104,13 +109,13 @@ class CopyDirent extends React.Component {
       this.setState({errMessage: message});
       return;
     }
-
+    
     // copy the dirent to current path
     if (selectedPath && this.props.path === selectedPath && repo.repo_id === repoID) {
       this.setState({errMessage: message});
       return;
     }
-
+    
     // copy the dirent to it's child. eg: A/B -> A/B/C
     if ( selectedPath && selectedPath.length > direntPath.length && selectedPath.indexOf(direntPath) > -1) {
       message = gettext('Can not copy directory %(src)s to its subdirectory %(des)s');
@@ -120,7 +125,7 @@ class CopyDirent extends React.Component {
       return;
     }
 
-    this.props.onItemCopy(repo, this.props.dirent, selectedPath, this.props.path);
+    this.props.onItemCopy(repo, this.props.dirent, selectedPath);
     this.toggle();
   }
 
@@ -145,22 +150,21 @@ class CopyDirent extends React.Component {
   }
 
   render() {
-    let title = gettext('Copy {placeholder} to');
+    let title = gettext('Copy {placeholder} to:');
     if (!this.props.isMutipleOperation) {
       title = title.replace('{placeholder}', '<span class="op-target">' + Utils.HTMLescape(this.props.dirent.name) + '</span>');
     } else {
       title = gettext('Copy selected item(s) to:');
     }
-    let mode = this.props.repoEncrypted ? 'only_current_library':'current_repo_and_other_repos';
     return (
       <Modal isOpen={true} toggle={this.toggle}>
         <ModalHeader toggle={this.toggle}><div dangerouslySetInnerHTML={{__html: title}}></div></ModalHeader>
         <ModalBody>
-          <FileChooser
+          <FileChooser 
             repoID={this.props.repoID}
             onDirentItemClick={this.onDirentItemClick}
             onRepoItemClick={this.onRepoItemClick}
-            mode={mode}
+            mode="current_repo_and_other_repos"
           />
           {this.state.errMessage && <Alert color="danger" style={{margin: '0.5rem'}}>{this.state.errMessage}</Alert>}
         </ModalBody>

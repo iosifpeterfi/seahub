@@ -3,14 +3,10 @@ import PropTypes from 'prop-types';
 import TreeView from '../../components/tree-view/tree-view';
 import Loading from '../../components/loading';
 import ModalPortal from '../../components/modal-portal';
+import Delete from '../../components/dialog/delete-dialog';
 import Rename from '../../components/dialog/rename-dialog';
-import Copy from '../../components/dialog/copy-dirent-dialog';
-import Move from '../../components/dialog/move-dirent-dialog';
 import CreateFolder from '../../components/dialog/create-folder-dialog';
 import CreateFile from '../../components/dialog/create-file-dialog';
-import ImageDialog from '../../components/dialog/image-dialog';
-import { siteRoot, thumbnailSizeForOriginal } from '../../utils/constants';
-import { Utils } from '../../utils/utils';
 
 const propTypes = {
   currentPath: PropTypes.string.isRequired,
@@ -25,14 +21,6 @@ const propTypes = {
   onDeleteNode: PropTypes.func.isRequired,
   onAddFileNode: PropTypes.func.isRequired,
   onAddFolderNode: PropTypes.func.isRequired,
-  repoID: PropTypes.string.isRequired,
-  navRate: PropTypes.number,
-  inResizing: PropTypes.bool.isRequired,
-  currentRepoInfo: PropTypes.object.isRequired,
-  onItemMove: PropTypes.func.isRequired,
-  onItemCopy: PropTypes.func.isRequired,
-  selectedDirentList: PropTypes.array.isRequired,
-  onItemsMove: PropTypes.func.isRequired,
 };
 
 class DirColumnNav extends React.Component {
@@ -41,15 +29,10 @@ class DirColumnNav extends React.Component {
     super(props);
     this.state = {
       opNode: null,
+      isDeleteDialogShow: false,
       isAddFileDialogShow: false,
       isAddFolderDialogShow: false,
       isRenameDialogShow: false,
-      isNodeImagePopupOpen: false,
-      imageNodeItems: [],
-      imageIndex: 0,
-      isCopyDialogShow: false,
-      isMoveDialogShow: false,
-      isMutipleOperation: false,
     };
     this.isNodeMenuShow = true;
   }
@@ -60,10 +43,6 @@ class DirColumnNav extends React.Component {
 
   onNodeClick = (node) => {
     this.setState({opNode: node});
-    if (Utils.imageCheck(node.object.name)) {
-      this.showNodeImagePopup(node);
-      return;
-    }
     this.props.onNodeClick(node);
   }
 
@@ -71,33 +50,16 @@ class DirColumnNav extends React.Component {
     this.setState({opNode: node});
     switch (operation) {
       case 'New Folder':
-        if (!node) {
-          this.onAddFolderToggle('root');
-        } else {
-          this.onAddFolderToggle();
-        }
+        this.onAddFolderToggle();
         break;
       case 'New File':
-        if (!node) {
-          this.onAddFileToggle('root');
-        } else {
-          this.onAddFileToggle();
-        }
+        this.onAddFileToggle();
         break;
       case 'Rename':
         this.onRenameToggle();
         break;
       case 'Delete':
-        this.onDeleteNode(node);
-        break;
-      case 'Copy':
-        this.onCopyToggle();
-        break;
-      case 'Move':
-        this.onMoveToggle();
-        break;
-      case 'Open in New Tab':
-        this.onOpenFile(node);
+        this.onDeleteToggle();
         break;
     }
   }
@@ -113,7 +75,7 @@ class DirColumnNav extends React.Component {
       this.setState({isAddFileDialogShow: !this.state.isAddFileDialogShow});
     }
   }
-
+  
   onAddFolderToggle = (type) => {
     if (type === 'root') {
       let root = this.props.treeData.root;
@@ -130,12 +92,8 @@ class DirColumnNav extends React.Component {
     this.setState({isRenameDialogShow: !this.state.isRenameDialogShow});
   }
 
-  onCopyToggle = () => {
-    this.setState({isCopyDialogShow: !this.state.isCopyDialogShow});
-  }
-
-  onMoveToggle = () => {
-    this.setState({isMoveDialogShow: !this.state.isMoveDialogShow});
+  onDeleteToggle = () => {
+    this.setState({isDeleteDialogShow: !this.state.isDeleteDialogShow});
   }
 
   onAddFolderNode = (dirPath) => {
@@ -154,18 +112,15 @@ class DirColumnNav extends React.Component {
     this.props.onRenameNode(node, newName);
   }
 
-  onDeleteNode = (node) => {
+  onDeleteNode = () => {
+    this.setState({isDeleteDialogShow: !this.state.isDeleteDialogShow});
+    let node = this.state.opNode;
     this.props.onDeleteNode(node);
-  }
-
-  onOpenFile = (node) => {
-    let newUrl = siteRoot + 'lib/' + this.props.repoID + '/file' + Utils.encodePath(node.path);
-    window.open(newUrl, '_blank');
   }
 
   checkDuplicatedName = (newName) => {
     let node = this.state.opNode;
-    // root node to new node conditions: parentNode is null,
+    // root node to new node conditions: parentNode is null, 
     let parentNode = node.parentNode ? node.parentNode : node;
     let childrenObject = parentNode.children.map(item => {
       return item.object;
@@ -176,84 +131,11 @@ class DirColumnNav extends React.Component {
     return isDuplicated;
   }
 
-  showNodeImagePopup = (node) => {
-    let childrenNode = node.parentNode.children;
-    let items = childrenNode.filter((item) => {
-      return Utils.imageCheck(item.object.name);
-    });
-    let imageNames = items.map((item) => {
-      return item.object.name;
-    });
-    this.setState({
-      isNodeImagePopupOpen: true,
-      imageNodeItems: this.prepareImageItems(node),
-      imageIndex: imageNames.indexOf(node.object.name)
-    });
-  }
-
-  prepareImageItems = (node) => {
-    let childrenNode = node.parentNode.children;
-    let items = childrenNode.filter((item) => {
-      return Utils.imageCheck(item.object.name);
-    });
-
-    const useThumbnail = !this.props.currentRepoInfo.encrypted;
-    let prepareItem = (item) => {
-      const name = item.object.name;
-
-      const path = Utils.encodePath(Utils.joinPath(node.parentNode.path, name));
-      const fileExt = name.substr(name.lastIndexOf('.') + 1).toLowerCase();
-      const isGIF = fileExt === 'gif';
-
-      const repoID = this.props.repoID;
-      let src = '';
-      if (useThumbnail && !isGIF) {
-        src = `${siteRoot}thumbnail/${repoID}/${thumbnailSizeForOriginal}${path}`;
-      } else {
-        src = `${siteRoot}repo/${repoID}/raw${path}`;
-      }
-
-      return {
-        'name': name,
-        'url': `${siteRoot}lib/${repoID}/file${path}`,
-        'src': src
-      };
-    };
-
-    return items.map((item) => { return prepareItem(item); });
-  }
-
-  closeNodeImagePopup = () => {
-    this.setState({
-      isNodeImagePopupOpen: false
-    });
-  }
-
-  moveToPrevImage = () => {
-    const imageItemsLength = this.state.imageNodeItems.length;
-    this.setState((prevState) => ({
-      imageIndex: (prevState.imageIndex + imageItemsLength - 1) % imageItemsLength
-    }));
-  }
-
-  moveToNextImage = () => {
-    const imageItemsLength = this.state.imageNodeItems.length;
-    this.setState((prevState) => ({
-      imageIndex: (prevState.imageIndex + 1) % imageItemsLength
-    }));
-  }
-
-  stopTreeScrollPropagation = (e) => {
-    e.stopPropagation();
-  }
-
   render() {
-    let flex = this.props.navRate ? '0 0 ' + this.props.navRate * 100 + '%' : '0 0 25%';
-    const select = this.props.inResizing ? 'none' : '';
     return (
       <Fragment>
-        <div className="dir-content-nav" role="navigation" style={{flex: (flex), userSelect: select}} onScroll={this.stopTreeScrollPropagation}>
-          {this.props.isTreeDataLoading ?
+        <div className="dir-content-nav" role="navigation">
+          {this.props.isTreeDataLoading ? 
             (<Loading/>) :
             (<TreeView
               repoPermission={this.props.repoPermission}
@@ -266,10 +148,6 @@ class DirColumnNav extends React.Component {
               onMenuItemClick={this.onMenuItemClick}
               onFreezedItem={this.onFreezedItem}
               onUnFreezedItem={this.onUnFreezedItem}
-              onItemMove={this.props.onItemMove}
-              currentRepoInfo={this.props.currentRepoInfo}
-              selectedDirentList={this.props.selectedDirentList}
-              onItemsMove={this.props.onItemsMove}
             />)
           }
         </div>
@@ -303,40 +181,12 @@ class DirColumnNav extends React.Component {
             />
           </ModalPortal>
         )}
-        {this.state.isCopyDialogShow && (
+        {this.state.isDeleteDialogShow && (
           <ModalPortal>
-            <Copy
-              path={this.state.opNode.parentNode.path}
-              repoID={this.props.repoID}
-              dirent={this.state.opNode.object}
-              onItemCopy={this.props.onItemCopy}
-              repoEncrypted={this.props.currentRepoInfo.encrypted}
-              onCancelCopy={this.onCopyToggle}
-              isMutipleOperation={this.state.isMutipleOperation}
-            />
-          </ModalPortal>
-        )}
-        {this.state.isMoveDialogShow && (
-          <ModalPortal>
-            <Move
-              path={this.state.opNode.parentNode.path}
-              repoID={this.props.repoID}
-              dirent={this.state.opNode.object}
-              onItemMove={this.props.onItemMove}
-              repoEncrypted={this.props.currentRepoInfo.encrypted}
-              onCancelMove={this.onMoveToggle}
-              isMutipleOperation={this.state.isMutipleOperation}
-            />
-          </ModalPortal>
-        )}
-        {this.state.isNodeImagePopupOpen && (
-          <ModalPortal>
-            <ImageDialog
-              imageItems={this.state.imageNodeItems}
-              imageIndex={this.state.imageIndex}
-              closeImagePopup={this.closeNodeImagePopup}
-              moveToPrevImage={this.moveToPrevImage}
-              moveToNextImage={this.moveToNextImage}
+            <Delete
+              currentNode={this.state.opNode}
+              handleSubmit={this.onDeleteNode}
+              toggleCancel={this.onDeleteToggle}
             />
           </ModalPortal>
         )}
@@ -344,10 +194,6 @@ class DirColumnNav extends React.Component {
     );
   }
 }
-
-DirColumnNav.defaultProps={
-  navRate: 0.25
-};
 
 DirColumnNav.propTypes = propTypes;
 

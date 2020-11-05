@@ -3,7 +3,7 @@
 import json
 from mock import patch
 
-from django.urls import reverse
+from django.core.urlresolvers import reverse
 from django.test import override_settings
 
 from seahub.test_utils import BaseTestCase

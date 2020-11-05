@@ -2,7 +2,7 @@ import os
 import json
 
 from mock import patch
-from django.urls import reverse
+from django.core.urlresolvers import reverse
 
 from seahub.test_utils import BaseTestCase
 from seaserv import seafile_api

@@ -1,6 +1,4 @@
 """Terms and Conditions Middleware"""
-from django.utils.deprecation import MiddlewareMixin
-
 from .models import TermsAndConditions
 from django.conf import settings
 import logging
@@ -14,7 +12,7 @@ TERMS_EXCLUDE_URL_PREFIX_LIST = getattr(settings, 'TERMS_EXCLUDE_URL_PREFIX_LIST
 TERMS_EXCLUDE_URL_LIST = getattr(settings, 'TERMS_EXCLUDE_URL_LIST', {'/termsrequired/', '/accounts/logout/', '/securetoo/'})
 
 
-class TermsAndConditionsRedirectMiddleware(MiddlewareMixin):
+class TermsAndConditionsRedirectMiddleware(object):
     """
     This middleware checks to see if the user is logged in, and if so,
     if they have accepted the site terms.

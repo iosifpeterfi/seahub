@@ -1,13 +1,26 @@
 # Copyright (c) 2012-2016 Seafile Ltd.
 
 import logging
-from . import settings
+import settings
 import datetime
 
 from seaserv import seafile_api, get_org_id_by_repo_id
 logger = logging.getLogger(__name__)
 
-try:
+if not hasattr(settings, 'EVENTS_CONFIG_FILE'):
+    def repo_created_cb(sender, **kwargs):
+        pass
+
+    def repo_restored_cb(sender, **kwargs):
+        pass
+
+    def repo_deleted_cb(sender, **kwargs):
+        pass
+
+    def clean_up_repo_trash_cb(sender, **kwargs):
+        pass
+
+else:
 
     import seafevents
 
@@ -17,21 +30,20 @@ try:
         repo_id = kwargs['repo_id']
         repo_name = kwargs['repo_name']
 
-        # Move here to avoid model import during Django setup.
-        # TODO: Don't register signal/handlers during Seahub start.
 
-        if org_id and org_id > 0:
+        # Move here to avoid model import during Django setup.
+        # TODO: Don't register signal/hanlders during Seahub start.
+        if org_id > 0:
             related_users = seafile_api.org_get_shared_users_by_repo(org_id, repo_id)
         else:
             related_users = seafile_api.get_shared_users_by_repo(repo_id)
             org_id = -1
 
-        if creator not in related_users:
-            related_users.append(creator)
+        related_users.append(creator)
 
         record = {
-            'op_type': 'create',
-            'obj_type': 'repo',
+            'op_type':'create',
+            'obj_type':'repo',
             'timestamp': datetime.datetime.utcnow(),
             'repo_id': repo_id,
             'repo_name': repo_name,
@@ -41,7 +53,7 @@ try:
             'org_id': org_id,
         }
 
-        from .utils import SeafEventsSession
+        from utils import SeafEventsSession
         session = SeafEventsSession()
         seafevents.save_user_activity(session, record)
         session.close()
@@ -50,7 +62,7 @@ try:
         library_template = kwargs['library_template']
 
         if LIBRARY_TEMPLATES and library_template:
-            if isinstance(library_template, str):
+            if isinstance(library_template, unicode):
                 library_template = library_template.encode('utf-8')
 
             try:
@@ -67,34 +79,28 @@ try:
 
         """
         org_id = kwargs['org_id']
+        related_users = kwargs['usernames']
         operator = kwargs['operator']
 
         repo_owner = kwargs['repo_owner']
         repo_id = kwargs['repo_id']
         repo_name = kwargs['repo_name']
+        related_users.append(repo_owner)
 
-        if org_id and org_id > 0:
-            related_users = seafile_api.org_get_shared_users_by_repo(org_id, repo_id)
-        else:
-            related_users = seafile_api.get_shared_users_by_repo(repo_id)
-            org_id = -1
-
-        if repo_owner not in related_users:
-            related_users.append(repo_owner)
 
         record = {
-            'op_type': 'delete',
-            'obj_type': 'repo',
+            'op_type':'delete',
+            'obj_type':'repo',
             'timestamp': datetime.datetime.utcnow(),
             'repo_id': repo_id,
             'repo_name': repo_name,
             'path': '/',
             'op_user': operator,
             'related_users': related_users,
-            'org_id': org_id if org_id and org_id > 0 else -1,
+            'org_id': org_id if org_id > 0 else -1,
         }
 
-        from .utils import SeafEventsSession
+        from utils import SeafEventsSession
         session = SeafEventsSession()
         seafevents.save_user_activity(session, record)
         session.close()
@@ -109,18 +115,16 @@ try:
         repo_name = kwargs['repo_name']
         repo_owner = kwargs['repo_owner']
 
-        if org_id and org_id > 0:
+        if org_id > 0:
             related_users = seafile_api.org_get_shared_users_by_repo(org_id, repo_id)
         else:
             related_users = seafile_api.get_shared_users_by_repo(repo_id)
             org_id = -1
 
-        if repo_owner not in related_users:
-            related_users.append(repo_owner)
-
+        related_users.append(repo_owner)
         record = {
-            'op_type': 'clean-up-trash',
-            'obj_type': 'repo',
+            'op_type':'clean-up-trash',
+            'obj_type':'repo',
             'timestamp': datetime.datetime.utcnow(),
             'repo_id': repo_id,
             'repo_name': repo_name,
@@ -131,7 +135,7 @@ try:
             'org_id': org_id,
         }
 
-        from .utils import SeafEventsSession
+        from utils import SeafEventsSession
         session = SeafEventsSession()
         seafevents.save_user_activity(session, record)
         session.close()
@@ -141,42 +145,28 @@ try:
         operator = kwargs['operator']
         repo = seafile_api.get_repo(repo_id)
         org_id = get_org_id_by_repo_id(repo_id)
-        if org_id and org_id > 0:
+        if org_id > 0:
             related_users = seafile_api.org_get_shared_users_by_repo(org_id, repo_id)
             repo_owner = seafile_api.get_org_repo_owner(repo_id)
         else:
             related_users = seafile_api.get_shared_users_by_repo(repo_id)
             repo_owner = seafile_api.get_repo_owner(repo_id)
 
-        if repo_owner not in related_users:
-            related_users.append(repo_owner)
+        related_users.append(repo_owner)
 
         record = {
-            'op_type': 'recover',
-            'obj_type': 'repo',
+            'op_type':'recover',
+            'obj_type':'repo',
             'timestamp': datetime.datetime.utcnow(),
             'repo_id': repo_id,
             'repo_name': repo.repo_name,
             'path': '/',
             'op_user': operator,
-            'related_users': related_users,
+            'related_users': [related_users],
             'org_id': org_id,
         }
 
-        from .utils import SeafEventsSession
+        from utils import SeafEventsSession
         session = SeafEventsSession()
         seafevents.save_user_activity(session, record)
         session.close()
-except ImportError:
-
-    def repo_created_cb(sender, **kwargs):
-        pass
-
-    def repo_restored_cb(sender, **kwargs):
-        pass
-
-    def repo_deleted_cb(sender, **kwargs):
-        pass
-
-    def clean_up_repo_trash_cb(sender, **kwargs):
-        pass

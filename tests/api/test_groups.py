@@ -29,6 +29,7 @@ class GroupsApiTest(ApiTestBase):
                 self.assertIsNotNone(group['ctime'])
                 self.assertIsNotNone(group['creator'])
                 self.assertIsNotNone(group['msgnum'])
+                self.assertIsNotNone(group['mtime'])
                 self.assertIsNotNone(group['id'])
                 self.assertIsNotNone(group['name'])
 
@@ -58,8 +59,8 @@ class GroupsApiTest(ApiTestBase):
         # check group is really removed
         groups = self.get(GROUPS_URL).json()['groups']
         for group in groups:
-            self.assertNotEqual(group['id'], group_id)
 
+            self.assertNotEqual(group['id'], group_id)
     def test_add_remove_group_with_hyphen(self):
         data = {'group_name': randstring(4) + '-' + randstring(4)}
         info = self.put(GROUPS_URL, data=data).json()
@@ -74,22 +75,8 @@ class GroupsApiTest(ApiTestBase):
         for group in groups:
             self.assertNotEqual(group['id'], group_id)
 
-    def test_add_remove_group_with_single_quote(self):
-        data = {'group_name': randstring(4) + "'" + randstring(4)}
-        info = self.put(GROUPS_URL, data=data).json()
-        self.assertTrue(info['success'])
-        group_id = info['group_id']
-        self.assertGreater(group_id, 0)
-        url = urljoin(GROUPS_URL, str(group_id))
-        self.delete(url)
-
-        # check group is really removed
-        groups = self.get(GROUPS_URL).json()['groups']
-        for group in groups:
-            self.assertNotEqual(group['id'], group_id)
-
-    def test_add_remove_group_with_blank_and_hyphen_and_single_quote(self):
-        data = {'group_name': randstring(2) + '-' + randstring(2) + ' ' + randstring(2) + "'" + randstring(2)}
+    def test_add_remove_group_with_blank_and_hyphen(self):
+        data = {'group_name': randstring(4) + '-' + randstring(4) + ' ' + randstring(4)}
         info = self.put(GROUPS_URL, data=data).json()
         self.assertTrue(info['success'])
         group_id = info['group_id']

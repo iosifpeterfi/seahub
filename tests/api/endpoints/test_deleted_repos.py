@@ -1,6 +1,6 @@
 import json
 
-from django.urls import reverse
+from django.core.urlresolvers import reverse
 from seaserv import seafile_api
 
 from seahub.test_utils import BaseTestCase

@@ -13,9 +13,8 @@ from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.settings import SEAHUB_DATA_ROOT, MEDIA_ROOT, \
-        CUSTOM_LOGO_PATH, MEDIA_URL
-from seahub.utils import get_file_type_and_ext, PREVIEW_FILEEXT, \
-    get_service_url
+        CUSTOM_LOGO_PATH
+from seahub.utils import get_file_type_and_ext, PREVIEW_FILEEXT
 from seahub.utils.file_types import IMAGE
 from seahub.utils.error_msg import file_type_error_msg, file_size_error_msg
 
@@ -28,9 +27,6 @@ class AdminLogo(APIView):
     permission_classes = (IsAdminUser,)
 
     def post(self, request):
-
-        if not request.user.admin_permissions.can_config_system():
-            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
         logo_file = request.FILES.get('logo', None)
         if not logo_file:
@@ -69,4 +65,4 @@ class AdminLogo(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        return Response({'logo_path': get_service_url() + MEDIA_URL + CUSTOM_LOGO_PATH})
+        return Response({'success': True})

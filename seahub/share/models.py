@@ -2,7 +2,6 @@
 import operator
 import datetime
 import logging
-import os
 
 from django.db import models
 from django.db.models import Q
@@ -16,7 +15,6 @@ from seahub.utils import normalize_file_path, normalize_dir_path, gen_token,\
     get_service_url
 from seahub.constants import PERMISSION_READ, PERMISSION_ADMIN
 from seahub.utils import is_valid_org_id
-from functools import reduce
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -302,14 +300,11 @@ class FileShare(models.Model):
     PERM_EDIT_DL = 'edit_download'
     PERM_EDIT_ONLY = 'edit_only'
 
-    PERM_VIEW_DL_UPLOAD = 'view_download_upload'
-
     PERMISSION_CHOICES = (
         (PERM_VIEW_DL, 'Preview only and can download'),
         (PERM_VIEW_ONLY, 'Preview only and disable download'),
         (PERM_EDIT_DL, 'Edit and can download'),
         (PERM_EDIT_ONLY, 'Edit and disable download'),
-        (PERM_VIEW_DL_UPLOAD, 'Preview only and can download and upload'),
     )
 
     username = LowerCaseCharField(max_length=255, db_index=True)
@@ -357,31 +352,18 @@ class FileShare(models.Model):
         if self.permission == FileShare.PERM_VIEW_DL:
             perm_dict['can_edit'] = False
             perm_dict['can_download'] = True
-            perm_dict['can_upload'] = False
         elif self.permission == FileShare.PERM_VIEW_ONLY:
             perm_dict['can_edit'] = False
             perm_dict['can_download'] = False
-            perm_dict['can_upload'] = False
         elif self.permission == FileShare.PERM_EDIT_DL:
             perm_dict['can_edit'] = True
             perm_dict['can_download'] = True
-            perm_dict['can_upload'] = False
         elif self.permission == FileShare.PERM_EDIT_ONLY:
             perm_dict['can_edit'] = True
             perm_dict['can_download'] = False
-            perm_dict['can_upload'] = False
-        elif self.permission == FileShare.PERM_VIEW_DL_UPLOAD:
-            perm_dict['can_edit'] = False
-            perm_dict['can_download'] = True
-            perm_dict['can_upload'] = True
         else:
             assert False
         return perm_dict
-
-    def get_obj_name(self):
-        if self.path:
-            return '/' if self.path == '/' else os.path.basename(self.path.rstrip('/'))
-        return ''
 
 
 class OrgFileShareManager(models.Manager):
@@ -401,9 +383,10 @@ class OrgFileShare(models.Model):
     Model used for organization file or dir shared link.
     """
     org_id = models.IntegerField(db_index=True)
-    file_share = models.OneToOneField(FileShare, on_delete=models.CASCADE)
+    file_share = models.OneToOneField(FileShare)
     objects = OrgFileShareManager()
 
+    objects = OrgFileShareManager()
 
 class UploadLinkShareManager(models.Manager):
     def _get_upload_link_by_path(self, username, repo_id, path):
@@ -467,12 +450,6 @@ class UploadLinkShare(models.Model):
 
     def is_owner(self, owner):
         return owner == self.username
-
-    def is_expired(self):
-        if self.expire_date is not None and timezone.now() > self.expire_date:
-            return True
-        else:
-            return False
 
 class PrivateFileDirShareManager(models.Manager):
     def add_private_file_share(self, from_user, to_user, repo_id, path, perm):

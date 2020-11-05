@@ -1,13 +1,13 @@
 # Copyright (c) 2012-2016 Seafile Ltd.
-
+from __future__ import absolute_import
 
 try:
     from urllib.parse import urlencode
 except ImportError:
-    from urllib.parse import urlencode
+    from urllib import urlencode
 
 from django.conf import settings
-from django.urls import reverse
+from django.core.urlresolvers import reverse
 from django.utils import translation
 from django.utils.translation import ugettext, pgettext
 from twilio.rest import TwilioRestClient

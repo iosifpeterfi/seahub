@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import ModalPortal from './modal-portal';
 import ListTaggedFilesDialog from './dialog/list-taggedfiles-dialog';
 import ListRepoDraftsDialog from './dialog/list-repo-drafts-dialog';
+import ListRepoReviewsDialog from './dialog/list-repo-reviews-dialog';
 import ReadmeDialog from './dialog/readme-dialog';
 import { siteRoot, gettext } from '../utils/constants';
 import { Utils } from '../utils/utils';
@@ -15,8 +16,8 @@ const propTypes = {
   usedRepoTags: PropTypes.array.isRequired,
   readmeMarkdown: PropTypes.object,
   draftCounts: PropTypes.number,
+  reviewCounts: PropTypes.number,
   updateUsedRepoTags: PropTypes.func.isRequired,
-  onFileTagChanged: PropTypes.func.isRequired,
 };
 
 class RepoInfoBar extends React.Component {
@@ -27,6 +28,7 @@ class RepoInfoBar extends React.Component {
       currentTag: null,
       isListTaggedFileShow: false,
       showRepoDrafts: false,
+      showRepoReviews: false,
       showReadmeDialog: false,
     };
   }
@@ -46,7 +48,13 @@ class RepoInfoBar extends React.Component {
 
   toggleDrafts = () => {
     this.setState({
-      showRepoDrafts: !this.state.showRepoDrafts
+      showRepoDrafts: !this.state.showRepoDrafts 
+    });
+  }
+
+  toggleReviews = () => {
+    this.setState({
+      showRepoReviews: !this.state.showRepoReviews 
     });
   }
 
@@ -67,7 +75,7 @@ class RepoInfoBar extends React.Component {
             {usedRepoTags.map((usedRepoTag) => {
               return (
                 <li key={usedRepoTag.id} className="used-tag-item">
-                  <span className="used-tag" style={{backgroundColor:usedRepoTag.color}}></span>
+                  <span className={`used-tag bg-${usedRepoTag.color}`}></span>
                   <span className="used-tag-name" title={usedRepoTag.name}>{usedRepoTag.name}</span>
                   <span className="used-tag-files" onClick={this.onListTaggedFiles.bind(this, usedRepoTag)}>
                     {usedRepoTag.fileCount > 1 ? usedRepoTag.fileCount + ' files' : usedRepoTag.fileCount + ' file'}
@@ -78,13 +86,13 @@ class RepoInfoBar extends React.Component {
           </ul>
         )}
         <div className={(usedRepoTags.length > 0 && readmeMarkdown) ? 'file-info-list mt-1' : 'file-info-list'}>
-          {(readmeMarkdown !== null && parseInt(readmeMarkdown.size) > 1) &&
+          {(readmeMarkdown !== null && parseInt(readmeMarkdown.size) > 1) && 
             <span className="file-info" onClick={this.toggleReadme}>
               <span className="info-icon sf2-icon-readme"></span>
               <span className="used-tag-name">{readmeMarkdown.name}</span>
             </span>
           }
-          {(readmeMarkdown !== null && parseInt(readmeMarkdown.size) < 2) &&
+          {(readmeMarkdown !== null && parseInt(readmeMarkdown.size) < 2) && 
             <span className="file-info">
               <span className="info-icon sf2-icon-readme"></span>
               <a className="used-tag-name" href={href} target='_blank'>{readmeMarkdown.name}</a>
@@ -99,6 +107,15 @@ class RepoInfoBar extends React.Component {
               </span>
             </span>
           }
+          {this.props.reviewCounts > 0 &&
+            <span className="file-info">
+              <span className="info-icon sf2-icon-review"></span>
+              <span className="used-tag-name">{gettext('review')}</span>
+              <span className="used-tag-files" onClick={this.toggleReviews}>
+                {this.props.reviewCounts > 1 ? this.props.reviewCounts + ' files' : this.props.reviewCounts + ' file'}
+              </span>
+            </span>
+          }
         </div>
         {this.state.isListTaggedFileShow && (
           <ModalPortal>
@@ -108,7 +125,6 @@ class RepoInfoBar extends React.Component {
               onClose={this.onCloseDialog}
               toggleCancel={this.onListTaggedFiles}
               updateUsedRepoTags={this.props.updateUsedRepoTags}
-              onFileTagChanged={this.props.onFileTagChanged}
             />
           </ModalPortal>
         )}
@@ -117,6 +133,15 @@ class RepoInfoBar extends React.Component {
           <ModalPortal>
             <ListRepoDraftsDialog
               toggle={this.toggleDrafts}
+              repoID={this.props.repoID}
+            />
+          </ModalPortal>
+        )}
+
+        {this.state.showRepoReviews && (
+          <ModalPortal>
+            <ListRepoReviewsDialog
+              toggle={this.toggleReviews}
               repoID={this.props.repoID}
             />
           </ModalPortal>

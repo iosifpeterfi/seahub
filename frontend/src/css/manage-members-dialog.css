@@ -1,6 +1,8 @@
 .manage-members {
   max-height: 300px;
   overflow-y: scroll;
+}
+.manage-members-table {
   margin: 1rem 0 2rem;
 }
 .manage-members-table th,
@@ -20,28 +22,24 @@
   opacity: 1;
 }
 
-.manage-members-table .editing {
-  background-color: rgba(0, 0, 0, 0.04);
-}
-
 .toggle-group-admin-icon:hover,
 .delete-group-member-icon:hover {
   color: #333;
 }
 
-.add-members-select .true__indicator-separator {
+.group-transfer-select .true__indicator-separator {
   display: none;
 }
 
-.add-members {
+.group-transfer {
   display: flex;
   justify-content: space-between;
 }
 
-.add-members .add-members-select {
+.group-transfer .group-transfer-select {
   width: 385px;
 }
-.add-members .btn {
+.group-transfer .btn {
   width: 75px;
 }
 .group-error {

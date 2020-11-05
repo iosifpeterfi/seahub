@@ -1,11 +1,3 @@
-.activity-details {
-  text-decoration: underline;
-  cursor: pointer;
-}
-.activity-details:hover {
-  color: #333;
-}
-.mobile-activity-time {
-  display: inline-block;
-  margin-bottom: .2em;
+table tr .activity-date {
+  border-top: 0;
 }

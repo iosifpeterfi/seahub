@@ -1,7 +1,7 @@
 import json
 
 from seaserv import seafile_api
-from django.urls import reverse
+from django.core.urlresolvers import reverse
 from seahub.test_utils import BaseTestCase
 
 class GroupLibrariesTest(BaseTestCase):
@@ -17,11 +17,6 @@ class GroupLibrariesTest(BaseTestCase):
 
     def tearDown(self):
         self.remove_group()
-
-    def test_get_admin_permission_denied(self):
-        self.login_as(self.admin_cannot_manage_group)
-        resp = self.client.get(reverse('api-v2.1-admin-group-libraries', args=[self.group_id]))
-        self.assertEqual(403, resp.status_code)
 
     def test_can_get(self):
         self.login_as(self.admin)

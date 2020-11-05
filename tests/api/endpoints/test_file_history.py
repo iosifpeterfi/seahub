@@ -1,6 +1,6 @@
 import json
 
-from django.urls import reverse
+from django.core.urlresolvers import reverse
 
 from seahub.test_utils import BaseTestCase
 from tests.common.utils import randstring

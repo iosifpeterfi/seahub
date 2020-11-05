@@ -12,40 +12,30 @@ body {
 .file-title {
   font-size: 1.2rem;
   font-weight: bold;
-  line-height: 1.5;
-  margin-bottom: 0;
+  margin-bottom: 5px;
 }
 .file-star,
 .file-internal-link {
   font-size: .875rem;
-  color: #999; 
+  color: #585858; 
   margin-left: .5rem;
 }
 .file-star:hover,
 .file-star:focus {
   text-decoration: none;
-  color: #999;
+  color: inherit;
 }
 .file-locked-icon {
   margin-left: .5rem;
 }
-.meta-info {
+.last-modification {
   font-size: .8125rem;
+}
+.last-modification-time {
+  margin-left: .5rem;
 }
 .file-view-content {
   padding: 30px 0;
   background: #f4f4f4;
   border-right: 4px solid transparent;
-}
-.tip {
-  color: #808080;
-}
-/* for mobile */
-.seafile-comment {
-  width: 100%;
-}
-@media (min-width: 768px) {
-  .seafile-comment {
-    width: 29%;
-  }
 }

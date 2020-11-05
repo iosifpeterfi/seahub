@@ -4,20 +4,14 @@ from django.utils import timezone
 
 from seahub.base.fields import LowerCaseCharField
 
-class InstitutionManager(models.Manager):
-    def add_institution(self, name):
-        institution = super(InstitutionManager, self).create(name=name)
-        institution.save()
-
-        return institution
 
 class Institution(models.Model):
     name = models.CharField(max_length=200)
     create_time = models.DateTimeField(default=timezone.now)
-    objects = InstitutionManager()
+
 
 class InstitutionAdmin(models.Model):
-    institution = models.ForeignKey(Institution, on_delete=models.CASCADE)
+    institution = models.ForeignKey(Institution)
     user = LowerCaseCharField(max_length=255, db_index=True)
 
 
@@ -30,6 +24,6 @@ class InstitutionQuotaManager(models.Manager):
 
 
 class InstitutionQuota(models.Model):
-    institution = models.ForeignKey(Institution, on_delete=models.CASCADE)
+    institution = models.ForeignKey(Institution)
     quota = models.BigIntegerField()
     objects = InstitutionQuotaManager()

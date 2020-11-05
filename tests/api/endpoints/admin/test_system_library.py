@@ -2,7 +2,7 @@ import json
 
 from seaserv import seafile_api
 
-from django.urls import reverse
+from django.core.urlresolvers import reverse
 from seahub.test_utils import BaseTestCase
 from tests.common.utils import upload_file_test
 
@@ -22,12 +22,6 @@ class AdminSystemLibraryTest(BaseTestCase):
         self.login_as(self.user)
         resp = self.client.get(self.url)
         self.assertEqual(403, resp.status_code)
-
-    def test_get_admin_permission_denied(self):
-        self.login_as(self.admin_cannot_manage_library)
-        resp = self.client.get(self.url)
-        self.assertEqual(403, resp.status_code)
-
 
 class AdminSystemLibraryUploadLinkTest(BaseTestCase):
 
@@ -50,7 +44,3 @@ class AdminSystemLibraryUploadLinkTest(BaseTestCase):
         resp = self.client.get(self.url)
         self.assertEqual(403, resp.status_code)
 
-    def test_get_admin_permission_denied(self):
-        self.login_as(self.admin_cannot_manage_library)
-        resp = self.client.get(self.url)
-        self.assertEqual(403, resp.status_code)

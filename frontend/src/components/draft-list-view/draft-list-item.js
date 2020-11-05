@@ -12,7 +12,7 @@ const propTypes = {
   onFreezedItem: PropTypes.func.isRequired,
   onUnfreezedItem: PropTypes.func.isRequired,
   onDeleteHandler: PropTypes.func.isRequired,
-  onPublishHandler: PropTypes.func.isRequired,
+  onReviewHandler: PropTypes.func.isRequired,
 };
 
 class DraftListItem extends React.Component {
@@ -70,8 +70,8 @@ class DraftListItem extends React.Component {
     this.props.onDeleteHandler(this.props.draft);
   }
 
-  onPublishHandler = () => {
-    this.props.onPublishHandler(this.props.draft);
+  onReviewHandler = () => {
+    this.props.onReviewHandler(this.props.draft);
   }
 
   render() {
@@ -79,8 +79,9 @@ class DraftListItem extends React.Component {
     let repoID = draft.origin_repo_id;
     let filePath = draft.draft_file_path;
     let fileName = Utils.getFileName(filePath);
-    let draftUrl = siteRoot + 'drafts/' + draft.id + '/';
+    let draftUrl = siteRoot + 'lib/' + repoID + '/file' + filePath + '?mode=edit';
     let libraryUrl = siteRoot + 'library/' + repoID + '/' + encodeURIComponent(draft.repo_name) + '/' ;
+    let reviewUrl = siteRoot + 'drafts/review/' + draft.review_id + '/';
     let localTime = moment.utc(draft.updated_at).toDate();
     localTime = moment(localTime).fromNow();
 
@@ -94,23 +95,27 @@ class DraftListItem extends React.Component {
         <td className="library">
           <a href={libraryUrl} target="_blank">{draft.repo_name}</a>
         </td>
+        <td className="review">
+          {(draft.review_id && draft.review_status === 'open') ? 
+            <a href={reviewUrl} target="_blank">#{draft.review_id}</a> : 
+            <span>--</span> 
+          }
+        </td>
         <td className="update">{localTime}</td>
         <td className="text-center">
-          {this.state.isMenuIconShow && (
+          {(this.props.draft.review_status !== 'open' && this.state.isMenuIconShow) && (
             <Dropdown isOpen={this.state.isItemMenuShow} toggle={this.toggleOperationMenu}>
-              <DropdownToggle
-                tag="i"
-                className="fas fa-ellipsis-v attr-action-icon"
+              <DropdownToggle 
+                tag="i" 
+                className="fas fa-ellipsis-v attr-action-icon" 
                 title={gettext('More Operations')}
                 onClick={this.onDropdownToggleClick}
-                data-toggle="dropdown"
+                data-toggle="dropdown" 
                 aria-expanded={this.state.isItemMenuShow}
               />
               <DropdownMenu>
                 <DropdownItem onClick={this.onDeleteHandler}>{gettext('Delete')}</DropdownItem>
-                {draft.status == 'open' &&
-                  <DropdownItem onClick={this.onPublishHandler}>{gettext('Publish')}</DropdownItem>
-                }
+                <DropdownItem onClick={this.onReviewHandler}>{gettext('Ask for review')}</DropdownItem>
               </DropdownMenu>
             </Dropdown>
           )}

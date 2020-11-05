@@ -1,13 +1,10 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { gettext, repoID, slug, siteRoot, username, isPro } from '../../utils/constants';
+import { gettext, repoID, slug, siteRoot, username } from '../../utils/constants';
+import CommonToolbar from '../../components/toolbar/common-toolbar';
 import WikiMarkdownViewer from '../../components/wiki-markdown-viewer';
 import WikiDirListView from '../../components/wiki-dir-list-view/wiki-dir-list-view';
 import Loading from '../../components/loading';
-import { Utils } from '../../utils/utils';
-import Search from '../../components/search/search';
-import Notification from '../../components/common/notification';
-import Account from '../../components/common/account';
 
 const propTypes = {
   path: PropTypes.string.isRequired,
@@ -39,8 +36,7 @@ class MainPanel extends Component {
   }
 
   onMainNavBarClick = (e) => {
-    let path = Utils.getEventData(e, 'path');
-    this.props.onMainNavBarClick(path);
+    this.props.onMainNavBarClick(e.target.dataset.path);
   }
 
   renderNavPath = () => {
@@ -49,26 +45,23 @@ class MainPanel extends Component {
     let pathElem = paths.map((item, index) => {
       if (item === '') {
         return;
-      }
+      } 
       if (index === (paths.length - 1)) {
         return (
-          <Fragment key={index}>
-            <span className="path-split">/</span>
-            <span className="path-file-name">{item}</span>
-          </Fragment>
+          <span key={index}><span className="path-split">/</span>{item}</span>
         );
       } else {
         nodePath += '/' + item;
         return (
-          <Fragment key={index} >
+          <span key={index} >
             <span className="path-split">/</span>
-            <a
-              className="path-link"
-              data-path={nodePath}
+            <a 
+              className="path-link" 
+              data-path={nodePath} 
               onClick={this.onMainNavBarClick}>
               {item}
             </a>
-          </Fragment>
+          </span>
         );
       }
     });
@@ -77,57 +70,43 @@ class MainPanel extends Component {
 
 
   render() {
-    let { onSearchedClick, permission } = this.props;
-    let searchPlaceholder = gettext('Search files in this library');
     const errMessage = (<div className="message err-tip">{gettext('Folder does not exist.')}</div>);
-
-    const isViewingFile = this.props.pathExist && !this.props.isDataLoading && this.props.isViewFile;
     return (
       <div className="main-panel wiki-main-panel o-hidden">
-        <div className={`main-panel-north panel-top ${this.props.permission === 'rw' ? 'border-left-show' : ''}`}>
-          {!username &&
-            <Fragment>
-              <div className="cur-view-toolbar">
-                <span className="sf2-icon-menu hidden-md-up d-md-none side-nav-toggle" title="Side Nav Menu" onClick={this.onMenuClick}></span>
-              </div>
-              <div className="common-toolbar">
-                {isPro && (
-                  <Search isPublic={true} repoID={repoID} onSearchedClick={onSearchedClick} placeholder={searchPlaceholder}/>
-                )}
-              </div>
-            </Fragment>
-          }
+        <div className="main-panel-north panel-top border-left-show">
           {username && (
             <Fragment>
               <div className="cur-view-toolbar">
                 <span className="sf2-icon-menu hidden-md-up d-md-none side-nav-toggle" title="Side Nav Menu" onClick={this.onMenuClick}></span>
-                {this.props.permission == 'rw' && (
-                  Utils.isDesktop() ?
-                    <button className="btn btn-secondary operation-item" title={gettext('Edit')} onClick={this.onEditClick}>{gettext('Edit')}</button> :
-                    <span className="fa fa-pencil-alt mobile-toolbar-icon" title={gettext('Edit')} onClick={this.onEditClick} style={{'font-size': '1.1rem'}}></span>
+                {this.props.permission === 'rw' && (
+                  <button className="btn btn-secondary operation-item" title="Edit File" onClick={this.onEditClick}>{gettext('Edit Page')}</button>
                 )}
               </div>
-              <div className="common-toolbar">
-                {isPro && (
-                  <Search isPublic={true} repoID={repoID} onSearchedClick={onSearchedClick} placeholder={searchPlaceholder}/>
-                )}
-                <Notification />
-                <Account />
-              </div>
+              <CommonToolbar 
+                repoID={repoID}
+                onSearchedClick={this.props.onSearchedClick} 
+                searchPlaceholder={gettext('Search files in this library')}
+              />
             </Fragment>
           )}
         </div>
         <div className="main-panel-center">
           <div className="cur-view-path">
-            <div className="path-container">
-              <a href={siteRoot + 'published/' + slug} className="normal">{slug}</a>
+            <div className="path-containter">
+              {username &&
+                <Fragment>
+                  <a href={siteRoot + 'wikis/'} className="normal">{gettext('Wikis')}</a>
+                  <span className="path-split">/</span>
+                </Fragment>
+              }
+              <a href={siteRoot + 'wikis/' + slug} className="normal">{slug}</a>
               {this.renderNavPath()}
             </div>
           </div>
-          <div className={`cur-view-content ${isViewingFile ? 'o-hidden' : ''}`}>
+          <div className="cur-view-content">
             {!this.props.pathExist && errMessage}
             {this.props.pathExist && this.props.isDataLoading && <Loading />}
-            {isViewingFile && (
+            {(this.props.pathExist && !this.props.isDataLoading && this.props.isViewFile) && (
               <WikiMarkdownViewer
                 markdownContent={this.props.content}
                 isFileLoading={this.props.isDataLoading}
@@ -135,14 +114,13 @@ class MainPanel extends Component {
                 latestContributor={this.props.latestContributor}
                 onLinkClick={this.props.onLinkClick}
                 isWiki={true}
-                path={this.props.path}
               />
             )}
             {(!this.props.isDataLoading && !this.props.isViewFile) && (
               <WikiDirListView
                 path={this.props.path}
                 direntList={this.props.direntList}
-                onDirentClick={this.props.onDirentClick}
+                onDirentClick={this.props.onDirentClick} 
               />
             )}
           </div>

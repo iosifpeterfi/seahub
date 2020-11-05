@@ -2,9 +2,9 @@
 try:
     from urllib.parse import urlencode
 except ImportError:
-    from urllib.parse import urlencode
+    from urllib import urlencode
 
-from django.urls import reverse
+from django.core.urlresolvers import reverse
 from django.template.response import TemplateResponse
 from seahub.auth import REDIRECT_FIELD_NAME
 from django.core.exceptions import PermissionDenied

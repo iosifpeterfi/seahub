@@ -14,20 +14,13 @@ class CreateDepartmentRepoDialog extends React.Component {
     this.state = {
       repoName: '',
       errMessage: '',
-      isSubmitBtnActive: false,
     };
     this.newInput = React.createRef();
   }
 
   handleChange = (e) => {
-    if (!e.target.value.trim()) {
-      this.setState({isSubmitBtnActive: false});
-    } else {
-      this.setState({isSubmitBtnActive: true});
-    }
-
     this.setState({
-      repoName: e.target.value,
+      repoName: e.target.value, 
     });
   }
 
@@ -37,7 +30,7 @@ class CreateDepartmentRepoDialog extends React.Component {
       let repo = this.createRepo(this.state.repoName);
       this.props.onCreateRepo(repo, 'department');
     }
-  }
+  } 
 
   handleKeyPress = (e) => {
     if (e.key === 'Enter') {
@@ -84,11 +77,11 @@ class CreateDepartmentRepoDialog extends React.Component {
           <Form>
             <FormGroup>
               <Label for="repo-name">{gettext('Name')}</Label>
-              <Input
-                id="repo-name"
-                onKeyPress={this.handleKeyPress}
-                innerRef={input => {this.newInput = input;}}
-                value={this.state.repoName}
+              <Input 
+                id="repo-name" 
+                onKeyPress={this.handleKeyPress} 
+                innerRef={input => {this.newInput = input;}} 
+                value={this.state.repoName} 
                 onChange={this.handleChange}
                 maxLength={maxFileName}
               />
@@ -97,7 +90,7 @@ class CreateDepartmentRepoDialog extends React.Component {
           {this.state.errMessage && <Alert color="danger">{this.state.errMessage}</Alert>}
         </ModalBody>
         <ModalFooter>
-          <Button color="primary" onClick={this.handleSubmit} disabled={!this.state.isSubmitBtnActive}>{gettext('Submit')}</Button>
+          <Button color="primary" onClick={this.handleSubmit}>{gettext('Submit')}</Button>
         </ModalFooter>
       </Modal>
     );

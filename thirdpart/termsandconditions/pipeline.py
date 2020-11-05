@@ -5,11 +5,11 @@
 try:
     from urllib.parse import urlparse, urlunparse
 except ImportError:
-    from urllib.parse import urlparse, urlunparse
+    from urlparse import urlparse, urlunparse
 from .models import TermsAndConditions
 from django.http import HttpResponseRedirect, QueryDict
 from django.conf import settings
-from django.urls import reverse
+from django.core.urlresolvers import reverse
 import logging
 
 ACCEPT_TERMS_PATH = getattr(settings, 'ACCEPT_TERMS_PATH', '/terms/accept/')

@@ -71,7 +71,7 @@ class SearchGroup(APIView):
                 groups = ccnet_api.get_all_groups(-1, -1)
             else:
                 username = request.user.username
-                groups = ccnet_api.get_groups(username)
+                groups = seaserv.get_personal_groups_by_user(username)
         else:
             groups = ccnet_api.get_all_groups(-1, -1)
 

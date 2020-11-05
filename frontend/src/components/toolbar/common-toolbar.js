@@ -1,10 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { isPro, gettext, showLogoutIcon } from '../../utils/constants';
+import { isPro, gettext } from '../../utils/constants';
 import Search from '../search/search';
 import Notification from '../common/notification';
 import Account from '../common/account';
-import Logout from '../common/logout';
 
 const propTypes = {
   repoID: PropTypes.string,
@@ -18,15 +17,14 @@ class  CommonToolbar extends React.Component {
     return (
       <div className="common-toolbar">
         {isPro && (
-          <Search
+          <Search 
             repoID={this.props.repoID}
             placeholder={searchPlaceholder}
-            onSearchedClick={this.props.onSearchedClick}
+            onSearchedClick={this.props.onSearchedClick} 
           />
         )}
-        <Notification />
+        <Notification  />
         <Account />
-        {showLogoutIcon && (<Logout />)}
       </div>
     );
   }

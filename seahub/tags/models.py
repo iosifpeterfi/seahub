@@ -1,16 +1,11 @@
 # Copyright (c) 2012-2016 Seafile Ltd.
 # -*- coding: utf-8 -*-
-import os
 import uuid
 import hashlib
-import posixpath
 
 from django.db import models
 
-from seaserv import seafile_api
-
 from seahub.base.fields import LowerCaseCharField
-from seahub.utils import normalize_file_path, normalize_dir_path
 
 
 ########## Manager
@@ -32,7 +27,6 @@ class FileUUIDMapManager(models.Manager):
             return:
                 uuid of filemap
         """
-        repo_id, parent_path = self.model.get_origin_repo_id_and_parent_path(repo_id, parent_path)
         uuid = self.get_fileuuidmap_by_path(repo_id, parent_path, filename, is_dir)
         if not uuid:
             uuid = self.model(repo_id=repo_id, parent_path=parent_path,
@@ -50,7 +44,6 @@ class FileUUIDMapManager(models.Manager):
             return:
                 return uuid if it's exist,otherwise return None
         """
-        repo_id, parent_path = self.model.get_origin_repo_id_and_parent_path(repo_id, parent_path)
         md5_repo_id_parent_path = self.model.md5_repo_id_parent_path(repo_id, parent_path)
         uuid = super(FileUUIDMapManager, self).filter(
             repo_id_parent_path_md5=md5_repo_id_parent_path,
@@ -62,25 +55,11 @@ class FileUUIDMapManager(models.Manager):
             return None
 
     def get_fileuuidmaps_by_parent_path(self, repo_id, parent_path):
-        repo_id, parent_path = self.model.get_origin_repo_id_and_parent_path(repo_id, parent_path)
         parent_path = FileUUIDMap.normalize_path(parent_path)
         uuids = super(FileUUIDMapManager, self).filter(
             repo_id=repo_id, parent_path=parent_path
         )
         return uuids
-
-    def get_or_create_fileuuidmap_by_path(self, repo_id, path, is_dir):
-        if is_dir:
-            path = normalize_dir_path(path)
-        else:
-            path = normalize_file_path(path)
-
-        path = path.rstrip('/')
-
-        parent_path = os.path.dirname(path)
-        obj_name = os.path.basename(path)
-
-        return self.get_or_create_fileuuidmap(repo_id, parent_path, obj_name, is_dir)
 
 
 class TagsManager(models.Manager):
@@ -202,14 +181,6 @@ class FileUUIDMap(models.Model):
     def normalize_path(self, path):
         return path.rstrip('/') if path != '/' else '/'
 
-    @classmethod
-    def get_origin_repo_id_and_parent_path(cls, repo_id, parent_path):
-        repo = seafile_api.get_repo(repo_id)
-        if repo.is_virtual:
-            repo_id = repo.origin_repo_id
-            parent_path = posixpath.join(repo.origin_path, parent_path.strip('/'))
-        return repo_id, parent_path
-
     def save(self, *args, **kwargs):
         self.parent_path = self.normalize_path(self.parent_path)
         if not self.repo_id_parent_path_md5:
@@ -227,7 +198,7 @@ class Tags(models.Model):
 
 class FileTag(models.Model):
     uuid = models.ForeignKey(FileUUIDMap, on_delete=models.CASCADE)
-    tag = models.ForeignKey(Tags, on_delete=models.CASCADE)
+    tag = models.ForeignKey(Tags)
     username = LowerCaseCharField(max_length=255)
 
     objects = FileTagManager()

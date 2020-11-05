@@ -3,8 +3,6 @@ import PropTypes from 'prop-types';
 import { Button, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 import { gettext } from '../../utils/constants';
 import { seafileAPI } from '../../utils/seafile-api';
-import { Utils } from '../../utils/utils';
-import toaster from '../toast';
 import RepoTag from '../../models/repo-tag';
 
 import '../../css/repo-tag.css';
@@ -46,16 +44,14 @@ class TagListItem extends React.Component {
 
   render() {
     let color = this.props.item.color;
-    let drakColor = Utils.getDarkColor(color);
-    const fileCount = this.props.item.fileCount;
-    let fileTranslation = (fileCount === 1 || fileCount === 0) ? gettext('file') : gettext('files');
     return (
       <li className="tag-list-item">
-        <div className="tag-demo" style={{backgroundColor:color}} onMouseOver={this.onMouseOver} onMouseOut={this.onMouseOut}>
-          <span className={`${this.state.showSelectedTag ? 'show-tag-selected': ''}`} style={{backgroundColor: drakColor}}></span>
+        <div className={`tag-demo bg-${color}`} onMouseOver={this.onMouseOver} onMouseOut={this.onMouseOut}>
+          <span className={`bg-${color}-dark ${this.state.showSelectedTag ? 'show-tag-selected': ''}`}></span>
           <span className="tag-name">{this.props.item.name}</span>
           <span className="tag-files" onClick={this.onListTaggedFiles}>
-            {fileCount}{' '}{fileTranslation}
+            {/* todo 0 file 2 files  */}
+            {this.props.item.fileCount}{' '}{'files'}
           </span>
         </div>
         <i className="tag-edit fa fa-pencil-alt" onClick={this.onTagUpdate}></i>
@@ -93,9 +89,6 @@ class ListTagDialog extends React.Component {
       this.setState({
         repotagList: repotagList,
       });
-    }).catch(error => {
-      let errMessage = Utils.getErrorMsg(error);
-      toaster.danger(errMessage);
     });
   }
 

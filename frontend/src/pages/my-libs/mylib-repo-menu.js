@@ -1,13 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Dropdown, DropdownMenu, DropdownToggle, DropdownItem } from 'reactstrap';
-import { gettext, isPro, folderPermEnabled, enableRepoSnapshotLabel, enableResetEncryptedRepoPassword, isEmailConfigured } from '../../utils/constants';
-import { Utils } from '../../utils/utils';
+import { gettext, folderPermEnabled, enableRepoSnapshotLabel, enableResetEncryptedRepoPassword, isEmailConfigured } from '../../utils/constants';
 
 const propTypes = {
   isPC: PropTypes.bool,
   repo: PropTypes.object.isRequired,
-  isStarred: PropTypes.bool,
   onFreezedItem: PropTypes.func.isRequired,
   onUnfreezedItem: PropTypes.func.isRequired,
   onMenuItemClick: PropTypes.func.isRequired,
@@ -23,7 +21,7 @@ class MylibRepoMenu extends React.Component {
   }
 
   onMenuItemClick = (e) => {
-    let operation = Utils.getEventData(e, 'toggle');
+    let operation = e.target.dataset.toggle;
     this.props.onMenuItemClick(operation);
   }
 
@@ -37,7 +35,7 @@ class MylibRepoMenu extends React.Component {
       this.setState({isItemMenuShow: !this.state.isItemMenuShow});
       return;
     }
-
+    
     this.setState(
       {isItemMenuShow: !this.state.isItemMenuShow},
       () => {
@@ -52,35 +50,27 @@ class MylibRepoMenu extends React.Component {
 
   generatorOperations = () => {
     let repo = this.props.repo;
-    let showResetPasswordMenuItem = isPro && repo.encrypted && enableResetEncryptedRepoPassword && isEmailConfigured;
-    let operations = ['Rename', 'Transfer'];
-    if (folderPermEnabled) {
-      operations.push('Folder Permission');
-    }
-    operations.push('Share Links Admin', 'Divider');
+    let showResetPasswordMenuItem = repo.encrypted && enableResetEncryptedRepoPassword && isEmailConfigured;
+    let operations = ['Rename', 'Transfer', 'History Setting'];
     if (repo.encrypted) {
       operations.push('Change Password');
     }
     if (showResetPasswordMenuItem) {
-      operations.push('Reset Password');
+      operations.push('Reset Password')
     }
-    operations.push('History Setting', 'API Token');
+    if (folderPermEnabled) {
+      operations.push('Folder Permission');
+    }
+    operations.push('Details');
     if (this.props.isPC && enableRepoSnapshotLabel) {
-      operations.push('Label Current State');
+      operations.push('Label current state');
     }
-    operations.push('Old Files Auto Delete');
     return operations;
   }
 
   translateOperations = (item) => {
     let translateResult = '';
     switch(item) {
-      case 'Star':
-        translateResult = gettext('Star');
-        break;
-      case 'Unstar':
-        translateResult = gettext('Unstar');
-        break;
       case 'Share':
         translateResult = gettext('Share');
         break;
@@ -105,17 +95,11 @@ class MylibRepoMenu extends React.Component {
       case 'Folder Permission':
         translateResult = gettext('Folder Permission');
         break;
-      case 'Label Current State':
-        translateResult = gettext('Label Current State');
+      case 'Details':
+        translateResult = gettext('Details');
         break;
-      case 'API Token':
-        translateResult = 'API Token'; // translation is not needed here
-        break;
-      case 'Share Links Admin':
-        translateResult = gettext('Share Links Admin');
-        break;
-      case 'Old Files Auto Delete':
-        translateResult = gettext('Auto deletion');
+      case 'Label current state':
+        translateResult = gettext('Label current state');
         break;
       default:
         break;
@@ -131,49 +115,42 @@ class MylibRepoMenu extends React.Component {
     if (this.props.isPC) {
       return (
         <Dropdown isOpen={this.state.isItemMenuShow} toggle={this.toggleOperationMenu}>
-          <DropdownToggle
+          <DropdownToggle 
             tag="i"
             className="sf-dropdown-toggle sf2-icon-caret-down"
             title={gettext('More Operations')}
             // onClick={this.clickOperationMenuToggle}
-            data-toggle="dropdown"
+            data-toggle="dropdown" 
             aria-expanded={this.state.isItemMenuShow}
           />
           <DropdownMenu>
-            {operations.map((item, index)=> {
-              if (item == 'Divider') {
-                return <DropdownItem key={index} divider />;
-              } else {
-                return (<DropdownItem key={index} data-toggle={item} onClick={this.onMenuItemClick}>{this.translateOperations(item)}</DropdownItem>);
-              }
+            {operations.map((item, index )=> {
+              return (<DropdownItem key={index} data-toggle={item} onClick={this.onMenuItemClick}>{this.translateOperations(item)}</DropdownItem>);
             })}
           </DropdownMenu>
         </Dropdown>
-      );
+      )
     }
 
     // mobile menu
-    operations.unshift('Delete');
     operations.unshift('Share');
-    this.props.isStarred ? operations.unshift('Unstar') : operations.unshift('Star');
+    operations.unshift('Delete');
 
     return (
       <Dropdown isOpen={this.state.isItemMenuShow} toggle={this.toggleOperationMenu}>
-        <DropdownToggle
+        <DropdownToggle 
           tag="i"
-          className="sf-dropdown-toggle fa fa-ellipsis-v ml-0"
+          className="sf-dropdown-toggle sf2-icon-caret-down ml-0"
           title={gettext('More Operations')}
           // onClick={this.clickOperationMenuToggle}
-          data-toggle="dropdown"
+          data-toggle="dropdown" 
           aria-expanded={this.state.isItemMenuShow}
         />
         <div className={`${this.state.isItemMenuShow ? '' : 'd-none'}`} onClick={this.toggleOperationMenu}>
           <div className="mobile-operation-menu-bg-layer"></div>
           <div className="mobile-operation-menu">
             {operations.map((item, index) => {
-              if (item != 'Divider') {
-                return (<DropdownItem key={index} className="mobile-menu-item" data-toggle={item} onClick={this.onMenuItemClick}>{this.translateOperations(item)}</DropdownItem>);
-              }
+              return (<DropdownItem key={index} className="mobile-menu-item" data-toggle={item} onClick={this.onMenuItemClick}>{this.translateOperations(item)}</DropdownItem>);
             })}
           </div>
         </div>

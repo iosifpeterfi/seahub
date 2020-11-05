@@ -43,41 +43,20 @@
 }
 
 .uploader-list-content {
-  padding: 0rem 1rem 1.25rem;
+  padding: 0.625rem 1rem 1.25rem;
   background-color: #fff;
   overflow: auto;
 }
 
-.file-upload-item {
-  height: 44px;
-}
-
-.upload-progress .progress-container {
-  height: 24px;
-  padding: 4px 0;
-}
-
-.upload-progress .progress {
-  height: 5px;
+.file-upload-item .progress {
   width: 80%;
 }
 
-.upload-progress .progress .progress-bar {
+.file-upload-item .progress .progress-bar {
   color: #e83;
 }
 
-.upload-progress .progress-text {
-  margin-top: 2px;
-  font-size: 12px;
-  line-height: 12px;
-  color: #666666;
-}
-
-.upload-operation .saving {
+.file-upload-item .saving {
   color: #ee8204;
   word-wrap: break-word;
-}
-
-.disabled-link {
-  color: #999999;
 }

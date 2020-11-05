@@ -1,10 +1,10 @@
 import json
 from mock import patch
-from django.urls import reverse
+from django.core.urlresolvers import reverse
 from django.test import override_settings
 
 from seahub.share.models import UploadLinkShare
-from seahub.utils import normalize_dir_path
+from seahub.utils import EMPTY_SHA1
 from seahub.test_utils import BaseTestCase
 
 
@@ -12,8 +12,6 @@ class GetFileUploadUrlULTest(BaseTestCase):
     def setUp(self):
         upload_link = UploadLinkShare.objects.create_upload_link_share(
             self.user.username, self.repo.id, self.folder, None, None)
-
-        self.obj_id = json.dumps({'parent_dir': normalize_dir_path(self.folder)})
 
         self.url = reverse('get_file_upload_url_ul', args=[
             upload_link.token]) + '?r=' + self.repo.id
@@ -30,7 +28,7 @@ class GetFileUploadUrlULTest(BaseTestCase):
         self.login_as(self.user)
         resp = self.client.get(self.url, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         mock_get_fileserver_access_token.assert_called_with(
-            self.repo.id, self.obj_id,
+            self.repo.id, EMPTY_SHA1,
             'upload-link', self.user.username, use_onetime=False)
         json_resp = json.loads(resp.content)
         assert 'test_token' in json_resp['url']
@@ -42,7 +40,7 @@ class GetFileUploadUrlULTest(BaseTestCase):
 
         resp = self.client.get(self.url, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         mock_get_fileserver_access_token.assert_called_with(
-            self.repo.id, self.obj_id,
+            self.repo.id, EMPTY_SHA1,
             'upload-link', self.user.username, use_onetime=False)
         json_resp = json.loads(resp.content)
         assert 'test_token' in json_resp['url']
@@ -57,7 +55,7 @@ class GetFileUploadUrlULTest(BaseTestCase):
         session.save()
         resp = self.client.get(self.url, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         mock_get_fileserver_access_token.assert_called_with(
-            self.repo.id, self.obj_id,
+            self.repo.id, EMPTY_SHA1,
             'upload-link', self.user.username, use_onetime=False)
         json_resp = json.loads(resp.content)
         assert 'test_token' in json_resp['url']
@@ -72,7 +70,7 @@ class GetFileUploadUrlULTest(BaseTestCase):
 
         resp = self.client.get(self.url, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         mock_get_fileserver_access_token.assert_called_with(
-            self.repo.id, self.obj_id,
+            self.repo.id, EMPTY_SHA1,
             'upload-link', self.user.username, use_onetime=False, check_virus=True)
         json_resp = json.loads(resp.content)
         assert 'test_token' in json_resp['url']

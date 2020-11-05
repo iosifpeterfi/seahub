@@ -19,9 +19,9 @@ def load_backend(path):
     module, attr = path[:i], path[i+1:]
     try:
         mod = import_module(module)
-    except ImportError as e:
+    except ImportError, e:
         raise ImproperlyConfigured('Error importing authentication backend %s: "%s"' % (module, e))
-    except ValueError as e:
+    except ValueError, e:
         raise ImproperlyConfigured('Error importing authentication backends. Is AUTHENTICATION_BACKENDS a correctly defined list or tuple?')
     try:
         cls = getattr(mod, attr)
